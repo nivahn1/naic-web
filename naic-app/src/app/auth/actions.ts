@@ -70,26 +70,18 @@ export async function signup(
     return { error: error.message };
   }
 
-  // Sign-ups are auto-confirmed (see the auto_confirm_on_signup trigger in
-  // supabase/schema.sql), so establish the session right away. `signUp` itself
-  // only returns a session when the project has email confirmation turned off,
-  // so fall back to an explicit sign-in.
-  if (!data.session) {
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (signInError) {
-      // Confirmation really is required on this project — tell them to check email.
-      return {
-        message:
-          "Almost there — check your inbox for a confirmation link to finish creating your account.",
-      };
-    }
+  // Email confirmation disabled → session is live immediately.
+  if (data.session) {
+    revalidatePath("/", "layout");
+    redirect(safeRedirect(formData.get("redirect")));
   }
 
-  revalidatePath("/", "layout");
-  redirect(safeRedirect(formData.get("redirect")));
+  // Email confirmation enabled → the user must click the link in their inbox,
+  // which lands on /auth/confirm and establishes the session there.
+  return {
+    message:
+      "Almost there — check your inbox for a confirmation link to finish creating your account.",
+  };
 }
 
 export async function login(
@@ -111,6 +103,12 @@ export async function login(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
+    if (error.code === "email_not_confirmed") {
+      return {
+        error:
+          "Please confirm your email first — check your inbox for the link we sent.",
+      };
+    }
     return { error: "Incorrect email or password." };
   }
 
