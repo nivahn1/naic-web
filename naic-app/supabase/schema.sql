@@ -72,9 +72,37 @@ create trigger profiles_touch_updated_at
   before update on public.profiles
   for each row execute function public.touch_updated_at();
 
--- 5. Backfill profiles for any users that already exist -----------------------
+-- 5. Auto-confirm sign-ups --------------------------------------------------
+-- Members can use the portal immediately, with no email round-trip.
+-- To require email verification instead: drop this trigger and turn
+-- "Confirm email" back on under Authentication → Providers → Email.
+
+create or replace function public.auto_confirm_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.email_confirmed_at is null then
+    new.email_confirmed_at := now();
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.auto_confirm_user() from anon, authenticated, public;
+
+drop trigger if exists auto_confirm_on_signup on auth.users;
+create trigger auto_confirm_on_signup
+  before insert on auth.users
+  for each row execute function public.auto_confirm_user();
+
+-- 6. Backfill for any users that already exist -------------------------------
 
 insert into public.profiles (id, full_name)
 select id, raw_user_meta_data ->> 'full_name'
 from auth.users
 on conflict (id) do nothing;
+
+update auth.users set email_confirmed_at = now() where email_confirmed_at is null;
