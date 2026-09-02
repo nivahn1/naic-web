@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { SiteHeader } from "./_components/SiteHeader";
 import { Logo } from "./_components/Logo";
 import { Constellation } from "./_components/Constellation";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
   title: "Advancing AI Responsibly",
@@ -152,11 +154,20 @@ const RECOGNITION = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  let authed = false;
+  if (isSupabaseConfigured) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    authed = !!user;
+  }
+
   return (
     <>
       <span id="top" />
-      <SiteHeader />
+      <SiteHeader authed={authed} />
 
       <main className="flex-1">
         {/* Hero */}
@@ -409,7 +420,7 @@ export default function Home() {
                   ))}
                 </ul>
                 <a
-                  href="#register"
+                  href="/signup"
                   className={`mt-6 rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
                     t.featured
                       ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white"
@@ -684,8 +695,8 @@ export default function Home() {
             <FooterCol
               title="Get in touch"
               links={[
-                ["Member Login", "#membership", "login"],
-                ["Become a Member", "#register"],
+                ["Member Login", "/login"],
+                ["Become a Member", "/signup"],
                 ["Contact Us", "mailto:web@nationalaiconsortium.org"],
                 ["nationalaiconsortium.org", "#top"],
               ]}

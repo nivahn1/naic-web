@@ -13,7 +13,7 @@ const NAV = [
   { href: "#chapters", label: "Chapters" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ authed = false }: { authed?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -60,18 +60,29 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <a
-            href="#login"
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-          >
-            Log in
-          </a>
-          <a
-            href="#membership"
-            className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
-          >
-            Join
-          </a>
+          {authed ? (
+            <a
+              href="/portal"
+              className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
+            >
+              Member portal
+            </a>
+          ) : (
+            <>
+              <a
+                href="/login"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              >
+                Log in
+              </a>
+              <a
+                href="/signup"
+                className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
+              >
+                Join
+              </a>
+            </>
+          )}
         </div>
 
         <button
@@ -106,20 +117,32 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="mt-2 grid grid-cols-2 gap-2 border-t border-black/10 pt-3 dark:border-white/10">
-            <a
-              href="#login"
-              onClick={() => setOpen(false)}
-              className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
-            >
-              Log in
-            </a>
-            <a
-              href="#membership"
-              onClick={() => setOpen(false)}
-              className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
-            >
-              Join
-            </a>
+            {authed ? (
+              <a
+                href="/portal"
+                onClick={() => setOpen(false)}
+                className="col-span-2 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+              >
+                Member portal
+              </a>
+            ) : (
+              <>
+                <a
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
+                >
+                  Log in
+                </a>
+                <a
+                  href="/signup"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                >
+                  Join
+                </a>
+              </>
+            )}
           </div>
         </div>
       )}
