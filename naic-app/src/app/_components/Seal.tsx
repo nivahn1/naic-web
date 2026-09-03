@@ -8,7 +8,10 @@ export type SealGlyph =
   | "business"
   | "policy"
   | "generative"
-  | "custom";
+  | "custom"
+  | "laurel"
+  | "medal"
+  | "rising";
 
 /** Disc + lettering colors, in light and dark mode. */
 export type SealColor = {
@@ -139,6 +142,47 @@ function Glyph({ glyph }: { glyph: SealGlyph }) {
           <path {...line} d="M92 154 H99" strokeWidth={6} />
           <path {...line} d="M125 154 H168" strokeWidth={6} />
           <circle cx="112" cy="154" r="12" fill="#fff" />
+        </g>
+      );
+    case "laurel":
+      return (
+        <g>
+          <path
+            d="M130 88 L137.6 107.5 L158.5 108.7 L142.4 122 L147.6 142.3 L130 131 L112.4 142.3 L117.6 122 L101.5 108.7 L122.4 107.5 Z"
+            fill="#fff"
+          />
+          <path {...line} d="M96 152 C84 128 92 104 108 92" strokeWidth={6} />
+          <path {...line} d="M164 152 C176 128 168 104 152 92" strokeWidth={6} />
+          <path {...line} d="M96 140 L86 136" strokeWidth={5} />
+          <path {...line} d="M94 126 L84 120" strokeWidth={5} />
+          <path {...line} d="M99 112 L90 104" strokeWidth={5} />
+          <path {...line} d="M164 140 L174 136" strokeWidth={5} />
+          <path {...line} d="M166 126 L176 120" strokeWidth={5} />
+          <path {...line} d="M161 112 L170 104" strokeWidth={5} />
+        </g>
+      );
+    case "medal":
+      return (
+        <g>
+          <path {...line} d="M112 80 L124 120" />
+          <path {...line} d="M148 80 L136 120" />
+          <circle cx="130" cy="146" r="32" {...line} strokeWidth={6} />
+          <path
+            d="M130 131 L133.8 140.7 L144.3 141.4 L136.2 148 L138.8 158.1 L130 152.5 L121.2 158.1 L123.8 148 L115.7 141.4 L126.2 140.7 Z"
+            fill="#fff"
+          />
+        </g>
+      );
+    case "rising":
+      return (
+        <g>
+          <path {...line} d="M92 176 C104 152 122 132 146 114" />
+          <circle cx="92" cy="176" r="8" fill="#fff" />
+          <circle cx="115" cy="146" r="6" fill="#fff" />
+          <path
+            d="M158 76 L163 90 L177 95 L163 100 L158 114 L153 100 L139 95 L153 90 Z"
+            fill="#fff"
+          />
         </g>
       );
   }
