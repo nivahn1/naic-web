@@ -3,6 +3,7 @@ import { Logo } from "./Logo";
 
 const EXPLORE: [string, string][] = [
   ["About", "/about"],
+  ["Board of Directors", "/about/board-of-directors"],
   ["State Chapters", "/chapters"],
   ["Programs", "/programs"],
   ["Training", "/training"],

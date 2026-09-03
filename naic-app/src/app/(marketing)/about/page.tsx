@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import {
   PageHeader,
   Section,
@@ -126,10 +127,18 @@ export default function AboutPage() {
         <div id="board" className="mt-14">
           <SectionTitle>Board of Directors</SectionTitle>
           <Lead>
-            The Consortium&rsquo;s Board of Directors is being formed ahead of the
-            2026 national launch. Details will be published here as appointments
-            are confirmed.
+            The Consortium&rsquo;s Board of Directors brings together leaders from
+            industry, government, healthcare, and research to provide governance
+            and strategic direction ahead of the 2026 national launch.
           </Lead>
+          <div className="mt-6">
+            <Link
+              href="/about/board-of-directors"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              Meet the Board
+            </Link>
+          </div>
         </div>
 
         <RelatedLinks
