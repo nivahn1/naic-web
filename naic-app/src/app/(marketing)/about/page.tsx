@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Logo } from "../../_components/Logo";
+import Image from "next/image";
 import {
   PageHeader,
   Section,
@@ -81,7 +81,14 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="mt-8 flex items-center gap-3">
-            <Logo className="h-10 w-10" />
+            <Image
+              src="/people/miracle-johnson.jpg"
+              alt="Dr. Miracle Johnson"
+              width={790}
+              height={790}
+              sizes="64px"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-black/10 dark:ring-white/15"
+            />
             <div>
               <p className="font-display font-semibold text-slate-900 dark:text-white">
                 Dr. Miracle Johnson, PhD, MBA
