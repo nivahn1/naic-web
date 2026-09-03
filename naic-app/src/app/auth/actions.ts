@@ -14,7 +14,9 @@ const NOT_CONFIGURED: AuthState = {
 
 export type AuthState = {
   error?: string;
-  fieldErrors?: Partial<Record<"name" | "email" | "password", string[]>>;
+  fieldErrors?: Partial<
+    Record<"name" | "email" | "password" | "confirm", string[]>
+  >;
   message?: string;
 };
 
@@ -30,6 +32,22 @@ const LoginSchema = z.object({
   email: z.email({ error: "Enter a valid email address." }).trim(),
   password: z.string().min(1, { error: "Enter your password." }),
 });
+
+const ResetRequestSchema = z.object({
+  email: z.email({ error: "Enter a valid email address." }).trim(),
+});
+
+const NewPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, { error: "Password must be at least 8 characters." }),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    error: "Passwords don’t match.",
+    path: ["confirm"],
+  });
 
 function safeRedirect(value: FormDataEntryValue | null): string {
   const path = typeof value === "string" ? value : "";
@@ -123,4 +141,74 @@ export async function signOut() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+export async function requestPasswordReset(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  if (!isSupabaseConfigured) return NOT_CONFIGURED;
+
+  const parsed = ResetRequestSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  }
+
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") ?? "";
+
+  // The link lands on /auth/confirm, which establishes a short-lived recovery
+  // session and forwards to /reset-password.
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+  });
+
+  // Always the same response, so we don't reveal whether an account exists.
+  return {
+    message:
+      "If an account exists for that email, a password-reset link is on its way.",
+  };
+}
+
+export async function updatePassword(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  if (!isSupabaseConfigured) return NOT_CONFIGURED;
+
+  const parsed = NewPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      error:
+        "This reset link has expired. Request a new one from the sign-in page.",
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    return {
+      error:
+        error.code === "same_password"
+          ? "That’s already your password — choose a new one."
+          : error.message,
+    };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/portal");
 }
