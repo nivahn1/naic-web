@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "./_components/SiteHeader";
+import { SiteFooter } from "./_components/SiteFooter";
 import { Logo } from "./_components/Logo";
 import { Constellation } from "./_components/Constellation";
 import { createClient } from "@/lib/supabase/server";
@@ -660,54 +661,7 @@ export default async function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer id="contact" className="border-t border-[var(--surface-border)] bg-[var(--background)]">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-          <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <Logo className="h-8 w-8" />
-                <span className="font-display text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white">
-                  National AI Consortium
-                </span>
-              </div>
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--muted)]">
-                Advancing the understanding, development, and responsible
-                application of artificial intelligence across industries.
-              </p>
-              <p className="mt-4 text-sm text-[var(--muted)]">
-                In collaboration with the Society for AI Management (SAIM).
-              </p>
-            </div>
-            <FooterCol
-              title="Explore"
-              links={[
-                ["Mission & Vision", "#about"],
-                ["Certification", "#certification"],
-                ["Programs & Training", "#programs"],
-                ["Membership", "#membership"],
-                ["Conferences & Events", "#events"],
-                ["2026 Calendar", "#calendar"],
-                ["Recognition", "#recognition"],
-                ["State Chapters", "#chapters"],
-              ]}
-            />
-            <FooterCol
-              title="Get in touch"
-              links={[
-                ["Member Login", "/login"],
-                ["Become a Member", "/signup"],
-                ["Contact Us", "mailto:web@nationalaiconsortium.org"],
-                ["nationalaiconsortium.org", "#top"],
-              ]}
-            />
-          </div>
-          <div className="mt-14 flex flex-col gap-2 border-t border-[var(--surface-border)] pt-6 text-xs text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; {new Date().getFullYear()} National AI Consortium. All rights reserved.</p>
-            <p>Purposeful &middot; Transparent &middot; Beneficial to society</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
@@ -741,35 +695,6 @@ function Section({
         {children}
       </div>
     </section>
-  );
-}
-
-function FooterCol({
-  title,
-  links,
-}: {
-  title: string;
-  links: [string, string, string?][];
-}) {
-  return (
-    <div>
-      <h3 className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
-        {title}
-      </h3>
-      <ul className="mt-4 space-y-2.5 text-sm text-[var(--muted)]">
-        {links.map(([text, href, anchorId]) => (
-          <li key={text}>
-            <a
-              id={anchorId}
-              href={href}
-              className="transition-colors hover:text-violet-600 dark:hover:text-white"
-            >
-              {text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 
