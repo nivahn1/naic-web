@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader, Section, CtaRow, RelatedLinks } from "../../_components/content";
-import { ProgramEmblem } from "./ProgramEmblem";
+import { Seal } from "../../_components/Seal";
 import { PROGRAMS } from "./programs";
 
 export const metadata: Metadata = {
@@ -28,8 +28,10 @@ export default function ProgramsPage() {
               href={`/programs/${p.slug}`}
               className="group flex flex-col items-center text-center"
             >
-              <ProgramEmblem
-                program={p}
+              <Seal
+                id={p.slug}
+                label={p.name}
+                mark={p.emblem}
                 className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
               />
               <h2 className="font-display mt-8 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-white">

@@ -11,32 +11,32 @@ import {
 } from "../../../_components/content";
 import { Constellation } from "../../../_components/Constellation";
 import { Seal } from "../../../_components/Seal";
-import { PROGRAMS, getProgram } from "../programs";
+import { TRAININGS, getTraining } from "../training";
 
 export function generateStaticParams() {
-  return PROGRAMS.map((p) => ({ slug: p.slug }));
+  return TRAININGS.map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({
   params,
-}: PageProps<"/programs/[slug]">): Promise<Metadata> {
+}: PageProps<"/training/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const program = getProgram(slug);
-  if (!program) return {};
-  return { title: program.name, description: program.blurb };
+  const training = getTraining(slug);
+  if (!training) return {};
+  return { title: training.name, description: training.blurb };
 }
 
 const HEADING =
   "font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300";
 
-export default async function ProgramPage({
+export default async function TrainingDetailPage({
   params,
-}: PageProps<"/programs/[slug]">) {
+}: PageProps<"/training/[slug]">) {
   const { slug } = await params;
-  const program = getProgram(slug);
-  if (!program) notFound();
+  const training = getTraining(slug);
+  if (!training) notFound();
 
-  const others = PROGRAMS.filter((p) => p.slug !== program.slug);
+  const others = TRAININGS.filter((t) => t.slug !== training.slug);
 
   return (
     <>
@@ -48,76 +48,79 @@ export default async function ProgramPage({
         <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-5 pb-16 pt-36 text-center sm:px-8 sm:pb-20 sm:pt-44">
           <Link
-            href="/programs"
+            href="/training"
             className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-violet-300 hover:text-white"
           >
-            ← All programs
+            ← All training
           </Link>
           <Seal
-            id={program.slug}
-            label={program.name}
-            mark={program.emblem}
+            id={training.slug}
+            label={training.name}
+            mark={training.emblem}
             tone="dark"
             className="h-44 w-44 sm:h-52 sm:w-52"
           />
           <h1 className="font-display text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
-            {program.name}
+            {training.name}
           </h1>
           <p className="max-w-2xl text-pretty text-lg leading-8 text-slate-300/85">
-            {program.blurb}
+            {training.blurb}
           </p>
         </div>
       </section>
 
       <Section>
-        <SectionTitle>Program overview</SectionTitle>
-        <Lead>{program.overview}</Lead>
+        <SectionTitle>About this training</SectionTitle>
+        <Lead>{training.overview}</Lead>
 
         <div className="mt-10 grid gap-8 md:grid-cols-2">
           <div>
-            <h2 className={HEADING}>Structure</h2>
-            <CheckList items={program.structure} />
+            <h2 className={HEADING}>Key focus areas</h2>
+            <CheckList items={training.focus} />
           </div>
-          {program.modules ? (
+          <div className="space-y-8">
             <div>
-              <h2 className={HEADING}>Modules</h2>
-              <ol className="mt-4 space-y-2 text-sm leading-6 text-[var(--muted)]">
-                {program.modules.map((m, idx) => (
-                  <li key={m} className="flex gap-3">
-                    <span className="font-display font-semibold tabular-nums text-slate-400">
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                    <span>{m}</span>
-                  </li>
-                ))}
-              </ol>
+              <h2 className={HEADING}>Who it is for</h2>
+              <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
+                {training.audience}
+              </p>
             </div>
-          ) : null}
+            {training.outcome ? (
+              <div className="rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6">
+                <h2 className={HEADING}>Outcome</h2>
+                <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                  {training.outcome}
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-10">
-          <h2 className={HEADING}>Participants will gain</h2>
-          <CheckList items={program.learn} />
-        </div>
+        {training.groups?.map((group) => (
+          <div key={group.title} className="mt-10">
+            <h2 className={HEADING}>{group.title}</h2>
+            <CheckList items={group.items} />
+          </div>
+        ))}
       </Section>
 
       <Section tint wide>
-        <SectionTitle>Other programs</SectionTitle>
+        <SectionTitle>Other training</SectionTitle>
         <div className="mt-10 grid gap-x-10 gap-y-12 sm:grid-cols-3">
-          {others.map((p) => (
+          {others.map((t) => (
             <Link
-              key={p.slug}
-              href={`/programs/${p.slug}`}
+              key={t.slug}
+              href={`/training/${t.slug}`}
               className="group flex flex-col items-center text-center"
             >
               <Seal
-                id={p.slug}
-                label={p.name}
-                mark={p.emblem}
+                id={t.slug}
+                label={t.name}
+                mark={t.emblem}
                 className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
               />
               <h3 className="font-display mt-5 text-base font-semibold text-slate-900 dark:text-white">
-                {p.name}
+                {t.name}
               </h3>
               <span className="font-display mt-2 text-sm font-semibold text-violet-600 underline-offset-4 group-hover:underline dark:text-violet-300">
                 Learn More →
@@ -129,16 +132,20 @@ export default async function ProgramPage({
 
       <Section>
         <CtaRow
-          text={`Join the Consortium to enroll in the next ${program.name} cohort and access member pricing.`}
+          text={`Bring ${training.name} in-house, or enroll your team in an upcoming cohort.`}
           actions={[
-            { label: "Become a member", href: "/signup", primary: true },
-            { label: "Contact us", href: "/about" },
+            {
+              label: "Talk to the training team",
+              href: "mailto:web@nationalaiconsortium.org?subject=AI%20training%20enquiry",
+              primary: true,
+            },
+            { label: "All training", href: "/training" },
           ]}
         />
         <RelatedLinks
           links={[
-            { label: "All programs", href: "/programs" },
-            { label: "Training", href: "/training" },
+            { label: "Programs", href: "/programs" },
+            { label: "Services", href: "/services" },
             { label: "Certification", href: "/#certification" },
           ]}
         />
