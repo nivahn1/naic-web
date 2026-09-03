@@ -1,16 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
 
 const NAV = [
-  { href: "#about", label: "About" },
-  { href: "#certification", label: "Certification" },
-  { href: "#programs", label: "Programs" },
-  { href: "#membership", label: "Membership" },
-  { href: "#events", label: "Events" },
-  { href: "#recognition", label: "Recognition" },
-  { href: "#chapters", label: "Chapters" },
+  { href: "/about", label: "About" },
+  { href: "/programs", label: "Programs" },
+  { href: "/training", label: "Training" },
+  { href: "/events", label: "Events" },
+  { href: "/recognition", label: "Recognition" },
+  { href: "/chapters", label: "Chapters" },
 ];
 
 export function SiteHeader({ authed = false }: { authed?: boolean }) {
@@ -40,47 +40,47 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
             : "border-transparent bg-transparent"
         }`}
       >
-        <a href="#top" className="flex items-center gap-2.5 pl-1">
+        <Link href="/" className="flex items-center gap-2.5 pl-1">
           <Logo className="h-8 w-8" />
           <span className="font-display text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white">
             National AI Consortium
           </span>
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
           {NAV.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-black/5 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
           {authed ? (
-            <a
+            <Link
               href="/portal"
               className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
             >
               Member portal
-            </a>
+            </Link>
           ) : (
             <>
-              <a
+              <Link
                 href="/login"
                 className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
               >
                 Log in
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/signup"
                 className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
               >
                 Join
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -106,41 +106,41 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
         <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-black/10 bg-white/90 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#0d0b1c]/95">
           <nav className="flex flex-col">
             {NAV.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-700 hover:bg-black/5 dark:text-slate-200 dark:hover:bg-white/10"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="mt-2 grid grid-cols-2 gap-2 border-t border-black/10 pt-3 dark:border-white/10">
             {authed ? (
-              <a
+              <Link
                 href="/portal"
                 onClick={() => setOpen(false)}
                 className="col-span-2 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
               >
                 Member portal
-              </a>
+              </Link>
             ) : (
               <>
-                <a
+                <Link
                   href="/login"
                   onClick={() => setOpen(false)}
                   className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
                 >
                   Log in
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
                   className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
                 >
                   Join
-                </a>
+                </Link>
               </>
             )}
           </div>
