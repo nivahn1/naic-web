@@ -7,6 +7,13 @@ import {
   CtaRow,
   RelatedLinks,
 } from "../../_components/content";
+import {
+  LIVE_COUNT,
+  REGIONS,
+  STATES,
+  STATE_COUNT,
+  isLive,
+} from "@/lib/chapters";
 
 export const metadata: Metadata = {
   title: "State Chapters",
@@ -14,10 +21,44 @@ export const metadata: Metadata = {
     "National AI Consortium chapters bring the mission to life in all 50 states, building toward a 2026 national launch.",
 };
 
+function StateTile({ abbr, name }: { abbr: string; name: string }) {
+  const live = isLive(abbr);
+
+  return (
+    <div
+      className={`rounded-xl px-2 py-2.5 text-center ${
+        live
+          ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-600/20"
+          : "border border-[var(--surface-border)] bg-[var(--surface)]"
+      }`}
+    >
+      <span
+        className={`font-display block text-sm font-semibold tracking-tight ${
+          live ? "text-white" : "text-slate-900 dark:text-white"
+        }`}
+      >
+        {abbr}
+      </span>
+      <span
+        className={`mt-0.5 block truncate text-[10px] leading-4 ${
+          live ? "text-violet-100/90" : "text-[var(--muted)]"
+        }`}
+        title={name}
+      >
+        {name}
+      </span>
+      <span className="sr-only">
+        {live ? " — chapter live" : " — chapter forming"}
+      </span>
+    </div>
+  );
+}
+
 export default function ChaptersPage() {
   return (
     <>
       <PageHeader
+        center
         eyebrow="State Chapters"
         title="A presence in all 50 states."
         lead="The National AI Consortium Chapters bring our mission and vision to life in every state — local hubs for collaboration, innovation, and community engagement around artificial intelligence."
@@ -39,34 +80,64 @@ export default function ChaptersPage() {
           future of AI through shared knowledge, ethical standards, and
           collective action.
         </Lead>
+      </Section>
 
-        <div className="mt-10 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6 sm:p-8">
-          <div className="grid grid-cols-6 gap-2 sm:grid-cols-10">
-            {Array.from({ length: 50 }).map((_, i) => (
-              <span
-                key={i}
-                className={`aspect-square rounded-lg ${
-                  i % 7 === 0 || i % 11 === 0
-                    ? "bg-gradient-to-br from-violet-500 to-fuchsia-500"
-                    : "bg-black/5 dark:bg-white/10"
-                }`}
-              />
-            ))}
+      <Section tint wide>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <SectionTitle>Where we are today</SectionTitle>
+            <p className="mt-3 leading-7 text-[var(--muted)]">
+              <span className="font-display font-semibold text-slate-900 dark:text-white">
+                {LIVE_COUNT} of {STATE_COUNT}
+              </span>{" "}
+              chapters are live and driving local engagement. The remaining{" "}
+              {STATE_COUNT - LIVE_COUNT} are forming ahead of the 2026 national
+              launch.
+            </p>
           </div>
-          <p className="mt-5 text-xs text-[var(--muted)]">
-            Highlighted tiles represent chapters live today, actively operating
-            and driving local engagement ahead of our full national launch.
-          </p>
+          <div className="flex shrink-0 gap-5 text-xs text-[var(--muted)]">
+            <span className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded bg-gradient-to-br from-violet-600 to-fuchsia-600" />
+              Live
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded border border-[var(--surface-border)] bg-[var(--background)]" />
+              Forming
+            </span>
+          </div>
         </div>
 
-        <div className="mt-10">
-          <SectionTitle>Building toward 2026</SectionTitle>
-          <Lead>
-            A handful of chapters are already live. If you&rsquo;re interested in
-            becoming part of our chapters, contact us to learn more as we build
-            toward our 2026 launch.
-          </Lead>
+        <div className="mt-10 space-y-8">
+          {REGIONS.map((region) => {
+            const states = STATES.filter((s) => s.region === region);
+            const live = states.filter((s) => isLive(s.abbr)).length;
+
+            return (
+              <div key={region}>
+                <h3 className="font-display flex items-baseline gap-3 text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+                  {region}
+                  <span className="text-xs font-normal normal-case tracking-normal text-[var(--muted)]">
+                    {live} of {states.length} live
+                  </span>
+                </h3>
+                <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 lg:grid-cols-7">
+                  {states.map((s) => (
+                    <StateTile key={s.abbr} abbr={s.abbr} name={s.name} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
+      </Section>
+
+      <Section>
+        <SectionTitle>Building toward 2026</SectionTitle>
+        <Lead>
+          If your state is still forming, there is room to lead it. Contact us to
+          learn what starting a chapter involves as we build toward the national
+          launch.
+        </Lead>
 
         <CtaRow
           text="Bring a chapter to your state, or connect with the one nearest you."
