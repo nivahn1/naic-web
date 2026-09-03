@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter } from "./_components/SiteFooter";
-import { Logo } from "./_components/Logo";
+import Image from "next/image";
 import { Constellation } from "./_components/Constellation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -611,7 +611,14 @@ export default async function Home() {
           <div aria-hidden className="absolute left-1/2 top-0 -z-20 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[130px]" />
           <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-35" />
           <div className="mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-32">
-            <Logo className="mx-auto h-12 w-12" />
+            <Image
+              src="/people/miracle-johnson.jpg"
+              alt="Dr. Miracle Johnson"
+              width={790}
+              height={790}
+              sizes="112px"
+              className="mx-auto h-28 w-28 rounded-full object-cover ring-2 ring-white/25"
+            />
             <blockquote className="font-display mt-8 text-balance text-2xl font-medium leading-[1.35] sm:text-[2rem]">
               &ldquo;Our mission is to serve as a hub for learning, innovation, and
               collaboration in the rapidly evolving field of AI — bringing

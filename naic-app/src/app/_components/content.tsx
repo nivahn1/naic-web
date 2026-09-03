@@ -6,10 +6,13 @@ export function PageHeader({
   eyebrow,
   title,
   lead,
+  center,
 }: {
   eyebrow: string;
   title: string;
   lead?: string;
+  /** Center the column and add a rule under the title. */
+  center?: boolean;
 }) {
   return (
     <section className="grain relative isolate overflow-hidden bg-[#07060f] text-white">
@@ -22,15 +25,29 @@ export function PageHeader({
         className="absolute -left-40 -top-10 -z-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-600/20 blur-[130px]"
       />
       <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
-      <div className="mx-auto max-w-4xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20 sm:pt-44">
+      <div
+        className={`mx-auto max-w-4xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20 sm:pt-44 ${
+          center ? "text-center" : ""
+        }`}
+      >
         <span className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">
           {eyebrow}
         </span>
         <h1 className="font-display mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
           {title}
         </h1>
+        {center ? (
+          <span
+            aria-hidden
+            className="mx-auto mt-6 block h-1 w-24 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500"
+          />
+        ) : null}
         {lead ? (
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-8 text-slate-300/85">
+          <p
+            className={`mt-6 max-w-2xl text-pretty text-lg leading-8 text-slate-300/85 ${
+              center ? "mx-auto" : ""
+            }`}
+          >
             {lead}
           </p>
         ) : null}
@@ -42,9 +59,12 @@ export function PageHeader({
 /** A vertically padded content band with a centered max-width column. */
 export function Section({
   tint,
+  wide,
   children,
 }: {
   tint?: boolean;
+  /** Roomier column, for grids that need more than the reading measure. */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -53,7 +73,11 @@ export function Section({
         tint ? "bg-[var(--surface)]" : "bg-[var(--background)]"
       }`}
     >
-      <div className="mx-auto max-w-4xl px-5 py-16 sm:px-8 sm:py-20">
+      <div
+        className={`mx-auto px-5 py-16 sm:px-8 sm:py-20 ${
+          wide ? "max-w-6xl" : "max-w-4xl"
+        }`}
+      >
         {children}
       </div>
     </section>
