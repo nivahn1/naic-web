@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { login, signup, type AuthState } from "../auth/actions";
+import {
+  login,
+  requestPasswordReset,
+  signup,
+  updatePassword,
+  type AuthState,
+} from "../auth/actions";
 
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm text-white placeholder:text-slate-400 outline-none transition-colors focus:border-violet-400/70 focus:bg-white/[0.09]";
@@ -96,9 +102,17 @@ export function LoginForm({
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-200">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-baseline justify-between">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-200">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-violet-300 hover:text-white"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             id="password"
             name="password"
@@ -194,6 +208,103 @@ export function SignupForm({ redirectTo }: { redirectTo: string }) {
           Sign in
         </Link>
       </p>
+    </Card>
+  );
+}
+
+export function ForgotPasswordForm() {
+  const [state, formAction] = useActionState<AuthState, FormData>(
+    requestPasswordReset,
+    {},
+  );
+
+  return (
+    <Card
+      title="Reset your password"
+      subtitle="We’ll email you a link to set a new one."
+    >
+      <form action={formAction} className="flex flex-col gap-4">
+        <Alert state={state} />
+
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-200">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            className={inputClass}
+            placeholder="you@example.com"
+          />
+          <FieldError errors={state.fieldErrors?.email} />
+        </div>
+
+        <SubmitButton label="Send reset link" pendingLabel="Sending…" />
+      </form>
+
+      <p className="mt-6 text-center text-sm text-slate-300/80">
+        Remembered it?{" "}
+        <Link href="/login" className="font-semibold text-violet-300 hover:text-white">
+          Back to sign in
+        </Link>
+      </p>
+    </Card>
+  );
+}
+
+export function ResetPasswordForm() {
+  const [state, formAction] = useActionState<AuthState, FormData>(
+    updatePassword,
+    {},
+  );
+
+  return (
+    <Card
+      title="Choose a new password"
+      subtitle="Enter it twice to confirm, then you’re back in."
+    >
+      <form action={formAction} className="flex flex-col gap-4">
+        <Alert state={state} />
+
+        <div>
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-200">
+            New password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            className={inputClass}
+            placeholder="At least 8 characters"
+          />
+          <FieldError errors={state.fieldErrors?.password} />
+        </div>
+
+        <div>
+          <label htmlFor="confirm" className="mb-1.5 block text-sm font-medium text-slate-200">
+            Confirm new password
+          </label>
+          <input
+            id="confirm"
+            name="confirm"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            className={inputClass}
+            placeholder="Re-enter your password"
+          />
+          <FieldError errors={state.fieldErrors?.confirm} />
+        </div>
+
+        <SubmitButton label="Update password" pendingLabel="Updating…" />
+      </form>
     </Card>
   );
 }
