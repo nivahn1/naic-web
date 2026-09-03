@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Constellation } from "./_components/Constellation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { LIVE_COUNT, STATES, STATE_COUNT, isLive } from "@/lib/chapters";
 
 export const metadata: Metadata = {
   title: "Advancing AI Responsibly",
@@ -586,20 +587,25 @@ export default async function Home() {
             </div>
             <div className="reveal gradient-border rounded-3xl bg-[var(--surface)] p-8">
               <div className="grid grid-cols-6 gap-2">
-                {Array.from({ length: 50 }).map((_, i) => (
+                {STATES.map((state) => (
                   <span
-                    key={i}
-                    className={`aspect-square rounded-lg ${
-                      i % 7 === 0 || i % 11 === 0
-                        ? "bg-gradient-to-br from-violet-500 to-fuchsia-500"
-                        : "bg-black/5 dark:bg-white/10"
+                    key={state.abbr}
+                    title={`${state.name} — chapter ${
+                      isLive(state.abbr) ? "live" : "forming"
                     }`}
-                  />
+                    className={`font-display grid aspect-square place-items-center rounded-lg text-[11px] font-semibold ${
+                      isLive(state.abbr)
+                        ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
+                        : "bg-black/5 text-[var(--muted)] dark:bg-white/10"
+                    }`}
+                  >
+                    {state.abbr}
+                  </span>
                 ))}
               </div>
               <p className="mt-5 text-xs text-[var(--muted)]">
-                Highlighted tiles represent chapters live today, driving local
-                engagement ahead of the national launch.
+                {LIVE_COUNT} of {STATE_COUNT} chapters are live today, driving
+                local engagement ahead of the national launch.
               </p>
             </div>
           </div>

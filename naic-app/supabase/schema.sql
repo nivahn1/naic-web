@@ -83,3 +83,37 @@ on conflict (id) do nothing;
 -- message; the link lands on /auth/confirm, which establishes the session.
 -- To let members in without verifying, turn off "Confirm email" under
 -- Authentication → Providers → Email.
+
+-- 6. Recognition nominations ---------------------------------------------------
+
+create table if not exists public.nominations (
+  id                 uuid primary key default gen_random_uuid(),
+  nominee_name       text not null check (char_length(nominee_name) between 2 and 120),
+  nominee_title      text check (char_length(nominee_title) <= 160),
+  nominee_company    text check (char_length(nominee_company) <= 160),
+  nominee_email      text not null check (char_length(nominee_email) <= 254),
+  nominee_phone      text check (char_length(nominee_phone) <= 40),
+  nominator_name     text not null check (char_length(nominator_name) between 2 and 120),
+  nominator_title    text check (char_length(nominator_title) <= 160),
+  nominator_company  text check (char_length(nominator_company) <= 160),
+  nominator_email    text not null check (char_length(nominator_email) <= 254),
+  nominator_phone    text check (char_length(nominator_phone) <= 40),
+  awards             text[] not null check (array_length(awards, 1) between 1 and 6),
+  rationale          text not null check (char_length(rationale) between 40 and 4000),
+  submitted_by       uuid references auth.users (id) on delete set null,
+  created_at         timestamptz not null default now()
+);
+
+alter table public.nominations enable row level security;
+
+-- Anyone may submit a nomination; the form is public by design. There is
+-- deliberately no select/update/delete policy, so submissions are write-only
+-- over the API and readable only with the service role (Supabase dashboard).
+drop policy if exists "Anyone may submit a nomination" on public.nominations;
+create policy "Anyone may submit a nomination"
+  on public.nominations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists nominations_created_at_idx
+  on public.nominations (created_at desc);

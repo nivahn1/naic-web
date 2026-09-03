@@ -1,23 +1,10 @@
-export type ProgramGlyph = "leadership" | "ethics" | "literacy" | "pathways";
-
-/** Disc + lettering colors for the emblem, in light and dark mode. */
-export type EmblemColor = {
-  disc: string;
-  discDark: string;
-  ink: string;
-  inkDark: string;
-};
+import type { SealMark } from "../../_components/Seal";
 
 export type Program = {
   slug: string;
   name: string;
   /** Curved lettering and center mark for the program seal. */
-  emblem: {
-    top: string;
-    bottom: string;
-    glyph: ProgramGlyph;
-    color: EmblemColor;
-  };
+  emblem: SealMark;
   /** Short pitch shown under the seal on the index page. */
   blurb: string;
   overview: string;
