@@ -10,7 +10,7 @@ function SaveButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+      className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
     >
       {pending ? "Saving…" : "Save changes"}
     </button>
@@ -35,12 +35,12 @@ export function ProfileForm({
       className="mt-6 max-w-md rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-6"
     >
       {state.ok && (
-        <div className="mb-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">
+        <div className="mb-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 dark:text-emerald-200">
           Profile updated.
         </div>
       )}
       {state.error && (
-        <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+        <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 dark:text-rose-200">
           {state.error}
         </div>
       )}
@@ -48,7 +48,7 @@ export function ProfileForm({
       <div>
         <label
           htmlFor="full_name"
-          className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+          className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
         >
           Full name
         </label>
@@ -59,7 +59,7 @@ export function ProfileForm({
           defaultValue={initialName}
           required
           minLength={2}
-          className="w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-violet-400/70 dark:text-white"
+          className="w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70 dark:text-white"
         />
         {state.fieldErrors?.full_name && (
           <p className="mt-1.5 text-xs text-rose-500">
@@ -69,14 +69,14 @@ export function ProfileForm({
       </div>
 
       <div className="mt-4">
-        <label className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200">
+        <label className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200">
           Email
         </label>
         <input
           type="email"
           value={email}
           disabled
-          className="w-full cursor-not-allowed rounded-xl border border-[var(--surface-border)] bg-black/5 px-4 py-2.5 text-sm text-[var(--muted)] dark:bg-white/5"
+          className="w-full cursor-not-allowed rounded-xl border border-[var(--surface-border)] bg-white/10 px-4 py-2.5 text-sm text-[var(--muted)] dark:bg-white/5"
         />
         <p className="mt-1.5 text-xs text-[var(--muted)]">
           Contact the Consortium to change your email address.

@@ -15,14 +15,18 @@ export function PageHeader({
   center?: boolean;
 }) {
   return (
-    <section className="grain relative isolate overflow-hidden bg-[#07060f] text-white">
+    <section className="grain relative isolate overflow-hidden bg-[#04041c] text-white">
       <div
         aria-hidden
-        className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#07060f_80%)]"
+        className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#04041c_80%)]"
       />
       <div
         aria-hidden
         className="absolute -left-40 -top-10 -z-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-600/20 blur-[130px]"
+      />
+      <div
+        aria-hidden
+        className="absolute -right-40 top-0 -z-20 h-[24rem] w-[24rem] rounded-full bg-[#f3cfc6]/10 blur-[130px]"
       />
       <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
       <div
@@ -39,7 +43,7 @@ export function PageHeader({
         {center ? (
           <span
             aria-hidden
-            className="mx-auto mt-6 block h-1 w-24 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500"
+            className="mx-auto mt-6 block h-1 w-24 rounded-full bg-gradient-to-r from-[#f3cfc6] via-fuchsia-500 to-violet-500"
           />
         ) : null}
         {lead ? (
@@ -86,7 +90,7 @@ export function Section({
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-display text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+    <h2 className="font-display text-2xl font-semibold tracking-tight text-white sm:text-3xl dark:text-white">
       {children}
     </h2>
   );
@@ -110,12 +114,12 @@ export function Card({
   return (
     <article className="rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6 sm:p-7">
       {eyebrow ? (
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-violet-300">
           {eyebrow}
         </p>
       ) : null}
       {title ? (
-        <h3 className="font-display mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+        <h3 className="font-display mt-2 text-lg font-semibold text-white dark:text-white">
           {title}
         </h3>
       ) : null}
@@ -150,7 +154,7 @@ export function CtaRow({
   actions: { label: string; href: string; primary?: boolean }[];
 }) {
   return (
-    <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-3xl bg-[radial-gradient(120%_140%_at_0%_0%,#7c3aed_0%,#5b21b6_45%,#2e1065_100%)] p-8 text-white sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-3xl bg-[radial-gradient(120%_140%_at_0%_0%,#4c2a99_0%,#1f1050_45%,#04041c_100%)] p-8 text-white sm:flex-row sm:items-center sm:justify-between">
       <p className="max-w-xl text-sm leading-6 text-violet-100/85">{text}</p>
       <div className="flex shrink-0 flex-wrap gap-3">
         {actions.map((a) => (
@@ -159,7 +163,7 @@ export function CtaRow({
             href={a.href}
             className={
               a.primary
-                ? "rounded-xl bg-white px-5 py-2.5 text-center text-sm font-semibold text-violet-800 transition-transform hover:-translate-y-0.5"
+                ? "rounded-xl bg-white px-5 py-2.5 text-center text-sm font-semibold text-[#00004d] transition-transform hover:-translate-y-0.5"
                 : "rounded-xl border border-white/40 px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
             }
           >
@@ -183,7 +187,7 @@ export function RelatedLinks({
         <Link
           key={l.href}
           href={l.href}
-          className="rounded-full border border-[var(--surface-border)] px-4 py-1.5 text-sm text-[var(--muted)] transition-colors hover:border-violet-400/50 hover:text-slate-900 dark:hover:text-white"
+          className="rounded-full border border-[var(--surface-border)] px-4 py-1.5 text-sm text-[var(--muted)] transition-colors hover:border-violet-400/50 hover:text-white dark:hover:text-white"
         >
           {l.label} →
         </Link>

@@ -35,7 +35,7 @@ export default function RecognitionPage() {
       <Section>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <SectionTitle>AI Excellence Awards</SectionTitle>
-          <p className="text-sm font-medium text-violet-600 dark:text-violet-300">
+          <p className="text-sm font-medium text-violet-300">
             Submission deadline · {SUBMISSION_DEADLINE}
           </p>
         </div>
@@ -61,6 +61,7 @@ export default function RecognitionPage() {
               id={list.slug}
               label={list.name}
               mark={list.emblem}
+              tone="dark"
               className="h-40 w-40 shrink-0 self-center sm:h-44 sm:w-44 sm:self-start"
             />
             <div>
@@ -69,7 +70,7 @@ export default function RecognitionPage() {
             </div>
           </div>
 
-          <h3 className="font-display mt-10 text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+          <h3 className="font-display mt-10 text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
             Selection criteria
           </h3>
           <CheckList items={list.criteria} />

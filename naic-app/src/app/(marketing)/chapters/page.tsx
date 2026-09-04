@@ -28,13 +28,13 @@ function StateTile({ abbr, name }: { abbr: string; name: string }) {
     <div
       className={`rounded-xl px-2 py-2.5 text-center ${
         live
-          ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-600/20"
+          ? "bg-gradient-to-br from-[#00004d] to-violet-600 text-white shadow-sm shadow-violet-600/20"
           : "border border-[var(--surface-border)] bg-[var(--surface)]"
       }`}
     >
       <span
         className={`font-display block text-sm font-semibold tracking-tight ${
-          live ? "text-white" : "text-slate-900 dark:text-white"
+          live ? "text-white" : "text-white dark:text-white"
         }`}
       >
         {abbr}
@@ -87,7 +87,7 @@ export default function ChaptersPage() {
           <div>
             <SectionTitle>Where we are today</SectionTitle>
             <p className="mt-3 leading-7 text-[var(--muted)]">
-              <span className="font-display font-semibold text-slate-900 dark:text-white">
+              <span className="font-display font-semibold text-white dark:text-white">
                 {LIVE_COUNT} of {STATE_COUNT}
               </span>{" "}
               chapters are live and driving local engagement. The remaining{" "}
@@ -97,7 +97,7 @@ export default function ChaptersPage() {
           </div>
           <div className="flex shrink-0 gap-5 text-xs text-[var(--muted)]">
             <span className="flex items-center gap-2">
-              <span className="h-3 w-3 rounded bg-gradient-to-br from-violet-600 to-fuchsia-600" />
+              <span className="h-3 w-3 rounded bg-gradient-to-br from-[#00004d] to-violet-600" />
               Live
             </span>
             <span className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function ChaptersPage() {
 
             return (
               <div key={region}>
-                <h3 className="font-display flex items-baseline gap-3 text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+                <h3 className="font-display flex items-baseline gap-3 text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
                   {region}
                   <span className="text-xs font-normal normal-case tracking-normal text-[var(--muted)]">
                     {live} of {states.length} live

@@ -24,14 +24,14 @@ function Avatar({ member }: { member: BoardMember }) {
         width={480}
         height={480}
         sizes="80px"
-        className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-1 ring-black/10 dark:ring-white/15"
+        className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-1 ring-white/15 dark:ring-white/15"
       />
     );
   }
   return (
     <div
       aria-hidden
-      className="font-display flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-xl font-semibold text-white ring-1 ring-black/10 dark:ring-white/15"
+      className="font-display flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 text-xl font-semibold text-white ring-1 ring-white/15 dark:ring-white/15"
     >
       {initials(member.name)}
     </div>
@@ -42,14 +42,14 @@ function DirectorCard({ member }: { member: BoardMember }) {
   return (
     <article className="flex flex-col rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6">
       <Avatar member={member} />
-      <h3 className="font-display mt-4 text-lg font-semibold text-slate-900 dark:text-white">
+      <h3 className="font-display mt-4 text-lg font-semibold text-white dark:text-white">
         {member.name}
       </h3>
       <div className="mt-1.5 space-y-1">
         {member.roles.map((role) => (
           <p
             key={role}
-            className="text-sm leading-5 text-violet-600 dark:text-violet-300"
+            className="text-sm leading-5 text-violet-300"
           >
             {role}
           </p>

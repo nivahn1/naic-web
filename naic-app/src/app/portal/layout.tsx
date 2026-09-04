@@ -29,11 +29,8 @@ export default async function PortalLayout({
     <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
       <header className="border-b border-[var(--surface-border)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Logo className="h-7 w-7" />
-            <span className="font-display text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
-              National AI Consortium
-            </span>
+          <Link href="/" className="flex items-center">
+            <Logo className="h-8" />
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-xs text-[var(--muted)] sm:inline">
@@ -42,7 +39,7 @@ export default async function PortalLayout({
             <form action={signOut}>
               <button
                 type="submit"
-                className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-violet-400/50 dark:text-slate-200"
+                className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-violet-400/50 dark:text-slate-200"
               >
                 Sign out
               </button>
@@ -55,7 +52,7 @@ export default async function PortalLayout({
         <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
           <aside className="lg:sticky lg:top-8 lg:self-start">
             <div className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-4">
-              <p className="font-display text-sm font-semibold text-slate-900 dark:text-white">
+              <p className="font-display text-sm font-semibold text-white dark:text-white">
                 {name}
               </p>
               <p className="mt-0.5 text-xs text-[var(--muted)]">

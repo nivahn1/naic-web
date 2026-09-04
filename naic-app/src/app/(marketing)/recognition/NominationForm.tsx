@@ -6,7 +6,7 @@ import { submitNomination, type NominationResult } from "./actions";
 import { NOMINATION_AWARDS } from "./recognition";
 
 const INPUT =
-  "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-violet-400/70 dark:text-white";
+  "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70 dark:text-white";
 
 function Field({
   name,
@@ -27,7 +27,7 @@ function Field({
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+        className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
       >
         {label}
         {required ? null : (
@@ -57,7 +57,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+      className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
     >
       {pending ? "Sending…" : "Submit nomination"}
     </button>
@@ -73,7 +73,7 @@ export function NominationForm() {
   if (state.ok) {
     return (
       <div className="mt-8 rounded-3xl border border-emerald-400/25 bg-emerald-400/10 p-8 text-center">
-        <p className="font-display text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+        <p className="font-display text-lg font-semibold text-emerald-200 dark:text-emerald-200">
           Nomination received.
         </p>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
@@ -92,13 +92,13 @@ export function NominationForm() {
       className="mt-8 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6 sm:p-8"
     >
       {state.error ? (
-        <div className="mb-6 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+        <div className="mb-6 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 dark:text-rose-200">
           {state.error}
         </div>
       ) : null}
 
       <fieldset>
-        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
           The nominee
         </legend>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -135,7 +135,7 @@ export function NominationForm() {
       </fieldset>
 
       <fieldset className="mt-10">
-        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
           About you
         </legend>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -177,7 +177,7 @@ export function NominationForm() {
       </fieldset>
 
       <fieldset className="mt-10">
-        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
           Award
         </legend>
         <p className="mt-2 text-sm text-[var(--muted)]">
@@ -187,7 +187,7 @@ export function NominationForm() {
           {NOMINATION_AWARDS.map((award) => (
             <label
               key={award}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-800 transition-colors hover:border-violet-400/50 dark:text-slate-200"
+              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50 dark:text-slate-200"
             >
               <input
                 type="checkbox"
@@ -207,7 +207,7 @@ export function NominationForm() {
       <div className="mt-10">
         <label
           htmlFor="rationale"
-          className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+          className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
         >
           Why are you nominating them?
         </label>

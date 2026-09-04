@@ -11,7 +11,7 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+      <h1 className="font-display text-2xl font-semibold tracking-tight text-white sm:text-3xl dark:text-white">
         Profile
       </h1>
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">

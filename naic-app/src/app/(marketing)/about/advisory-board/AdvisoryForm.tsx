@@ -5,10 +5,10 @@ import { useFormStatus } from "react-dom";
 import { submitAdvisoryApplication, type AdvisoryResult } from "./actions";
 
 const INPUT =
-  "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-violet-400/70 dark:text-white";
+  "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70 dark:text-white";
 
 const FILE_INPUT =
-  "block w-full text-sm text-[var(--muted)] file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-gradient-to-br file:from-violet-600 file:to-fuchsia-600 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:opacity-90";
+  "block w-full text-sm text-[var(--muted)] file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-gradient-to-br file:from-[#00004d] file:to-violet-600 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:opacity-90";
 
 function Field({
   name,
@@ -29,7 +29,7 @@ function Field({
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+        className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
       >
         {label}
         {required ? null : (
@@ -70,7 +70,7 @@ function FileField({
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+        className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
       >
         {label}
       </label>
@@ -96,7 +96,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+      className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
     >
       {pending ? "Submitting…" : "Submit application"}
     </button>
@@ -112,7 +112,7 @@ export function AdvisoryForm() {
   if (state.ok) {
     return (
       <div className="mt-8 rounded-3xl border border-emerald-400/25 bg-emerald-400/10 p-8 text-center">
-        <p className="font-display text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+        <p className="font-display text-lg font-semibold text-emerald-200 dark:text-emerald-200">
           Application received.
         </p>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
@@ -131,13 +131,13 @@ export function AdvisoryForm() {
       className="mt-8 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6 sm:p-8"
     >
       {state.error ? (
-        <div className="mb-6 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+        <div className="mb-6 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 dark:text-rose-200">
           {state.error}
         </div>
       ) : null}
 
       <fieldset>
-        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
           About you
         </legend>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -186,7 +186,7 @@ export function AdvisoryForm() {
       <div className="mt-10">
         <label
           htmlFor="message"
-          className="mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200"
+          className="mb-1.5 block text-sm font-medium text-slate-200 dark:text-slate-200"
         >
           Why do you want to join the Advisory Board?
         </label>
@@ -208,7 +208,7 @@ export function AdvisoryForm() {
       </div>
 
       <fieldset className="mt-10">
-        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
           Documents
         </legend>
         <div className="mt-5 grid gap-6 sm:grid-cols-2">

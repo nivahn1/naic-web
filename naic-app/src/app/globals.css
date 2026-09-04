@@ -1,40 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f5ff;
-  --foreground: #141227;
+  --background: #04041c;
+  --foreground: #ece9fb;
 
-  /* Brand — National AI Consortium: deep indigo-violet grounds,
-     electric violet + fuchsia accents, constellation-blue glow. */
+  /* Brand — National AI Consortium: navy grounds (matching the official
+     mark's #00004d), violet + fuchsia accents, blush highlights. The site
+     is navy by default now, not just in dark mode. */
   --brand-ink: #141227;
   --brand-deep: #0a0818;
+  --brand-navy: #00004d;
+  --brand-navy-deep: #04041c;
   --brand-primary: #7c3aed;
   --brand-primary-strong: #6d28d9;
   --brand-accent: #d946ef;
+  --brand-blush: #f3cfc6;
   --brand-glow: #6366f1;
-  --surface: #ffffff;
-  --surface-border: rgba(20, 18, 39, 0.1);
-  --muted: #5b5878;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-border: rgba(255, 255, 255, 0.09);
+  --muted: #a3a0c2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-brand-ink: var(--brand-ink);
+  --color-brand-navy: var(--brand-navy);
   --color-brand-primary: var(--brand-primary);
   --color-brand-accent: var(--brand-accent);
+  --color-brand-blush: var(--brand-blush);
   --font-sans: var(--font-inter);
   --font-display: var(--font-display);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #07060f;
-    --foreground: #ece9fb;
-    --surface: rgba(255, 255, 255, 0.035);
-    --surface-border: rgba(255, 255, 255, 0.09);
-    --muted: #a3a0c2;
-  }
 }
 
 html {

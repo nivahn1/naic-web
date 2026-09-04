@@ -82,12 +82,12 @@ export default function ConferencesPage() {
 
       {CONFERENCES.map((c, i) => (
         <Section key={c.name} tint={i % 2 === 1}>
-          <span className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
+          <span className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
             {c.when}
           </span>
           <SectionTitle>{c.name}</SectionTitle>
           <p className="mt-4 leading-7 text-[var(--muted)]">{c.body}</p>
-          <h3 className="mt-6 font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+          <h3 className="mt-6 font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
             Key highlights
           </h3>
           <CheckList items={c.highlights} />

@@ -88,10 +88,10 @@ export default function AboutPage() {
               width={790}
               height={790}
               sizes="64px"
-              className="h-16 w-16 rounded-full object-cover ring-1 ring-black/10 dark:ring-white/15"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-white/15 dark:ring-white/15"
             />
             <div>
-              <p className="font-display font-semibold text-slate-900 dark:text-white">
+              <p className="font-display font-semibold text-white dark:text-white">
                 Dr. Miracle Johnson, PhD, MBA
               </p>
               <p className="text-sm text-[var(--muted)]">
@@ -113,7 +113,7 @@ export default function AboutPage() {
           <div className="mt-6">
             <Link
               href="/about/board-of-directors"
-              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Meet the Board
             </Link>
@@ -134,7 +134,7 @@ export default function AboutPage() {
           <div className="mt-6">
             <Link
               href="/about/advisory-board"
-              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Express interest in joining
             </Link>
