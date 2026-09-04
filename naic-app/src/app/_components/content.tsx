@@ -15,10 +15,10 @@ export function PageHeader({
   center?: boolean;
 }) {
   return (
-    <section className="grain relative isolate overflow-hidden bg-[#04041c] text-white">
+    <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
       <div
         aria-hidden
-        className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#04041c_80%)]"
+        className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#00004d_80%)]"
       />
       <div
         aria-hidden
@@ -154,7 +154,7 @@ export function CtaRow({
   actions: { label: string; href: string; primary?: boolean }[];
 }) {
   return (
-    <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-3xl bg-[radial-gradient(120%_140%_at_0%_0%,#4c2a99_0%,#1f1050_45%,#04041c_100%)] p-8 text-white sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-3xl bg-[radial-gradient(120%_140%_at_0%_0%,#4c2a99_0%,#1f1050_45%,#00004d_100%)] p-8 text-white sm:flex-row sm:items-center sm:justify-between">
       <p className="max-w-xl text-sm leading-6 text-violet-100/85">{text}</p>
       <div className="flex shrink-0 flex-wrap gap-3">
         {actions.map((a) => (

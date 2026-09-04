@@ -8,10 +8,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grain relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#04041c] text-white">
+    <div className="grain relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#00004d] text-white">
       <div
         aria-hidden
-        className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#04041c_78%)]"
+        className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#00004d_78%)]"
       />
       <div
         aria-hidden

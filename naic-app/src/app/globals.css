@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #04041c;
+  --background: #00004d;
   --foreground: #ece9fb;
 
   /* Brand — National AI Consortium: navy grounds (matching the official
@@ -10,15 +10,15 @@
   --brand-ink: #141227;
   --brand-deep: #0a0818;
   --brand-navy: #00004d;
-  --brand-navy-deep: #04041c;
+  --brand-navy-deep: #00004d;
   --brand-primary: #7c3aed;
   --brand-primary-strong: #6d28d9;
   --brand-accent: #d946ef;
   --brand-blush: #f3cfc6;
   --brand-glow: #6366f1;
-  --surface: rgba(255, 255, 255, 0.035);
-  --surface-border: rgba(255, 255, 255, 0.09);
-  --muted: #a3a0c2;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-border: rgba(255, 255, 255, 0.12);
+  --muted: #c7c4e6;
 }
 
 @theme inline {

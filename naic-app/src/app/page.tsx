@@ -173,8 +173,8 @@ export default async function Home() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="grain relative isolate overflow-hidden bg-[#04041c] text-white">
-          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#04041c_78%)]" />
+        <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
+          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#00004d_78%)]" />
           <div aria-hidden className="absolute -left-40 top-10 -z-20 h-[34rem] w-[34rem] rounded-full bg-fuchsia-600/25 blur-[130px]" />
           <div aria-hidden className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-[#f3cfc6]/15 blur-[130px]" />
           <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-60" />
@@ -612,8 +612,8 @@ export default async function Home() {
         </Section>
 
         {/* Founder */}
-        <section className="grain relative isolate overflow-hidden bg-[#04041c] text-white">
-          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_120%_at_50%_0%,#331a66_0%,#150c3d_48%,#04041c_100%)]" />
+        <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
+          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_120%_at_50%_0%,#331a66_0%,#150c3d_48%,#00004d_100%)]" />
           <div aria-hidden className="absolute left-1/2 top-0 -z-20 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[130px]" />
           <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-35" />
           <div className="mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-32">

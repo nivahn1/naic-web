@@ -100,7 +100,7 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
       </div>
 
       {open && (
-        <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-white/15 bg-[#0d0b1c]/95 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#0d0b1c]/95">
+        <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-white/15 bg-[#00004d]/95 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#00004d]/95">
           <nav className="flex flex-col">
             {NAV.map((item) => (
               <Link
