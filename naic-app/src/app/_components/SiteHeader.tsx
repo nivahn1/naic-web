@@ -29,6 +29,7 @@ const NAV: {
 export function SiteHeader({ authed = false }: { authed?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileSubOpen, setMobileSubOpen] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -43,6 +44,11 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  const closeMenu = () => {
+    setOpen(false);
+    setMobileSubOpen(null);
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:pt-5">
@@ -139,7 +145,7 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
           type="button"
           aria-label="Toggle menu"
           aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => (open ? closeMenu() : setOpen(true))}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 text-slate-200 lg:hidden dark:border-white/15 dark:text-slate-200"
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -155,37 +161,71 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
       {open && (
         <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-white/15 bg-[#00004d]/95 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#00004d]/95">
           <nav className="flex flex-col">
-            {NAV.map((item) => (
-              <div key={item.href}>
+            {NAV.map((item) =>
+              item.children ? (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    aria-expanded={mobileSubOpen === item.href}
+                    onClick={() =>
+                      setMobileSubOpen((cur) =>
+                        cur === item.href ? null : item.href,
+                      )
+                    }
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+                  >
+                    {item.label}
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 10 10"
+                      fill="none"
+                      aria-hidden
+                      className={`transition-transform ${
+                        mobileSubOpen === item.href ? "rotate-180" : ""
+                      }`}
+                    >
+                      <path
+                        d="M2 3.5 5 6.5 8 3.5"
+                        stroke="currentColor"
+                        strokeWidth="1.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  {mobileSubOpen === item.href ? (
+                    <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={closeMenu}
+                          className="rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
                 <Link
+                  key={item.href}
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
                 >
                   {item.label}
                 </Link>
-                {item.children ? (
-                  <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={() => setOpen(false)}
-                        className="rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ))}
+              ),
+            )}
           </nav>
           <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 dark:border-white/10">
             {authed ? (
               <Link
                 href="/portal"
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
                 className="col-span-2 rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
               >
                 Member portal
@@ -194,14 +234,14 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
               <>
                 <Link
                   href="/login"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-xl border border-white/15 px-4 py-2.5 text-center text-sm font-semibold text-slate-200 dark:border-white/15 dark:text-slate-200"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
                 >
                   Join
