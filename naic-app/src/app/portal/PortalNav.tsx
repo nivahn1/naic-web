@@ -25,8 +25,8 @@ export function PortalNav() {
             href={link.href}
             className={`shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
               active
-                ? "bg-[var(--surface)] text-slate-900 shadow-sm ring-1 ring-[var(--surface-border)] dark:text-white"
-                : "text-[var(--muted)] hover:bg-black/5 hover:text-slate-900 dark:hover:bg-white/5 dark:hover:text-white"
+                ? "bg-[var(--surface)] text-white shadow-sm ring-1 ring-[var(--surface-border)] dark:text-white"
+                : "text-[var(--muted)] hover:bg-white/10 hover:text-white dark:hover:bg-white/5 dark:hover:text-white"
             }`}
           >
             {link.label}

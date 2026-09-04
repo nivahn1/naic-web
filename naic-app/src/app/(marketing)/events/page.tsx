@@ -28,7 +28,7 @@ function TimelineItem({ event, past }: { event: EventItem; past?: boolean }) {
       <div className="w-20 shrink-0 pt-0.5 text-right sm:w-28">
         <time
           dateTime={event.start}
-          className="font-display block text-sm font-semibold tracking-tight text-slate-900 sm:text-base dark:text-white"
+          className="font-display block text-sm font-semibold tracking-tight text-white sm:text-base dark:text-white"
         >
           {day}
         </time>
@@ -44,10 +44,10 @@ function TimelineItem({ event, past }: { event: EventItem; past?: boolean }) {
               : "bg-gradient-to-br from-fuchsia-500 to-violet-500"
           }`}
         />
-        <h3 className="font-display text-lg font-semibold tracking-tight text-slate-900 sm:text-xl dark:text-white">
+        <h3 className="font-display text-lg font-semibold tracking-tight text-white sm:text-xl dark:text-white">
           {event.name}
         </h3>
-        <p className="mt-1.5 font-medium text-slate-700 dark:text-slate-200">
+        <p className="mt-1.5 font-medium text-slate-200 dark:text-slate-200">
           &ldquo;{event.theme}&rdquo;
         </p>
         <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{event.body}</p>
@@ -56,7 +56,7 @@ function TimelineItem({ event, past }: { event: EventItem; past?: boolean }) {
             href={event.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-display mt-4 inline-block text-sm font-semibold text-violet-600 underline-offset-4 hover:underline dark:text-violet-300"
+            className="font-display mt-4 inline-block text-sm font-semibold text-violet-300 underline-offset-4 hover:underline dark:text-violet-300"
           >
             {hostname(event.href)} →
           </a>

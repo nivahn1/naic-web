@@ -39,11 +39,11 @@ export default function CelebrationsPage() {
 
       {CELEBRATIONS.map((c, i) => (
         <Section key={c.name} tint={i % 2 === 1}>
-          <span className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
+          <span className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
             {c.when}
           </span>
           <SectionTitle>{c.name}</SectionTitle>
-          <p className="mt-3 font-medium text-slate-700 dark:text-slate-200">
+          <p className="mt-3 font-medium text-slate-200 dark:text-slate-200">
             {c.theme}
           </p>
           <Lead>{c.body}</Lead>

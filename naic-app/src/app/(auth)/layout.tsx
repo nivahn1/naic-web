@@ -8,10 +8,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grain relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#07060f] text-white">
+    <div className="grain relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#00004d] text-white">
       <div
         aria-hidden
-        className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#07060f_78%)]"
+        className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#00004d_78%)]"
       />
       <div
         aria-hidden
@@ -19,16 +19,13 @@ export default function AuthLayout({
       />
       <div
         aria-hidden
-        className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-indigo-500/20 blur-[130px]"
+        className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-[#f3cfc6]/15 blur-[130px]"
       />
       <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
 
       <header className="px-5 py-5 sm:px-8">
-        <Link href="/" className="inline-flex items-center gap-2.5">
-          <Logo className="h-8 w-8" />
-          <span className="font-display text-[15px] font-semibold tracking-tight">
-            National AI Consortium
-          </span>
+        <Link href="/" className="inline-flex items-center">
+          <Logo className="h-9" />
         </Link>
       </header>
 

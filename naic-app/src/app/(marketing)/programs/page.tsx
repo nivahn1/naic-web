@@ -32,15 +32,16 @@ export default function ProgramsPage() {
                 id={p.slug}
                 label={p.name}
                 mark={p.emblem}
+                tone="dark"
                 className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
               />
-              <h2 className="font-display mt-8 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+              <h2 className="font-display mt-8 text-xl font-semibold tracking-tight text-white sm:text-2xl dark:text-white">
                 {p.name}
               </h2>
               <p className="mt-3 max-w-md text-pretty text-sm leading-6 text-[var(--muted)]">
                 {p.blurb}
               </p>
-              <span className="font-display mt-4 text-sm font-semibold text-violet-600 underline-offset-4 group-hover:underline dark:text-violet-300">
+              <span className="font-display mt-4 text-sm font-semibold text-violet-300 underline-offset-4 group-hover:underline dark:text-violet-300">
                 Learn More →
               </span>
             </Link>

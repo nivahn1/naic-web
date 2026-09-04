@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import {
   PageHeader,
   Section,
@@ -87,10 +88,10 @@ export default function AboutPage() {
               width={790}
               height={790}
               sizes="64px"
-              className="h-16 w-16 rounded-full object-cover ring-1 ring-black/10 dark:ring-white/15"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-white/15 dark:ring-white/15"
             />
             <div>
-              <p className="font-display font-semibold text-slate-900 dark:text-white">
+              <p className="font-display font-semibold text-white dark:text-white">
                 Dr. Miracle Johnson, PhD, MBA
               </p>
               <p className="text-sm text-[var(--muted)]">
@@ -102,7 +103,24 @@ export default function AboutPage() {
       </Section>
 
       <Section>
-        <div id="advisory">
+        <div id="board">
+          <SectionTitle>Board of Directors</SectionTitle>
+          <Lead>
+            The Consortium&rsquo;s Board of Directors brings together leaders from
+            industry, government, healthcare, and research to provide governance
+            and strategic direction ahead of the 2026 national launch.
+          </Lead>
+          <div className="mt-6">
+            <Link
+              href="/about/board-of-directors"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              Meet the Board
+            </Link>
+          </div>
+        </div>
+
+        <div id="advisory" className="mt-14">
           <SectionTitle>Advisory Board</SectionTitle>
           <Lead>
             The Advisory Board brings together distinguished leaders from
@@ -114,22 +132,13 @@ export default function AboutPage() {
             workforce development.
           </Lead>
           <div className="mt-6">
-            <a
-              href="mailto:web@nationalaiconsortium.org?subject=Advisory%20Board%20interest"
-              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+            <Link
+              href="/about/advisory-board"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Express interest in joining
-            </a>
+            </Link>
           </div>
-        </div>
-
-        <div id="board" className="mt-14">
-          <SectionTitle>Board of Directors</SectionTitle>
-          <Lead>
-            The Consortium&rsquo;s Board of Directors is being formed ahead of the
-            2026 national launch. Details will be published here as appointments
-            are confirmed.
-          </Lead>
         </div>
 
         <RelatedLinks

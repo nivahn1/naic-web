@@ -117,3 +117,58 @@ create policy "Anyone may submit a nomination"
 
 create index if not exists nominations_created_at_idx
   on public.nominations (created_at desc);
+
+-- 7. Advisory Board applications --------------------------------------------
+
+create table if not exists public.advisory_applications (
+  id            uuid primary key default gen_random_uuid(),
+  full_name     text not null check (char_length(full_name) between 2 and 120),
+  title         text check (char_length(title) <= 160),
+  company       text check (char_length(company) <= 160),
+  email         text not null check (char_length(email) <= 254),
+  phone         text check (char_length(phone) <= 40),
+  expertise     text check (char_length(expertise) <= 300),
+  message       text not null check (char_length(message) between 40 and 4000),
+  bio_path      text not null,
+  headshot_path text not null,
+  submitted_by  uuid references auth.users (id) on delete set null,
+  created_at    timestamptz not null default now()
+);
+
+alter table public.advisory_applications enable row level security;
+
+-- Same write-only shape as nominations: public insert, no select/update/delete
+-- policy, so applications are readable only with the service role.
+drop policy if exists "Anyone may submit an advisory application" on public.advisory_applications;
+create policy "Anyone may submit an advisory application"
+  on public.advisory_applications for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists advisory_applications_created_at_idx
+  on public.advisory_applications (created_at desc);
+
+-- Private bucket for the bio + headshot files that come with each application.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'advisory-applications',
+  'advisory-applications',
+  false,
+  10485760,
+  array[
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/png'
+  ]
+)
+on conflict (id) do update set
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Anyone may upload an advisory application file" on storage.objects;
+create policy "Anyone may upload an advisory application file"
+  on storage.objects for insert
+  to anon, authenticated
+  with check (bucket_id = 'advisory-applications');

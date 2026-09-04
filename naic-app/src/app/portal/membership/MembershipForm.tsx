@@ -11,7 +11,7 @@ function SaveButton({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={pending || disabled}
-      className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+      className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
     >
       {pending ? "Updating…" : "Update plan"}
     </button>
@@ -28,12 +28,12 @@ export function MembershipForm({ currentTier }: { currentTier: TierId }) {
   return (
     <form action={formAction} className="mt-6">
       {state.ok && (
-        <div className="mb-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">
+        <div className="mb-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 dark:text-emerald-200">
           Your plan has been updated.
         </div>
       )}
       {state.error && (
-        <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+        <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 dark:text-rose-200">
           {state.error}
         </div>
       )}
@@ -59,16 +59,16 @@ export function MembershipForm({ currentTier }: { currentTier: TierId }) {
                 className="sr-only"
               />
               <div className="flex items-baseline justify-between">
-                <span className="font-display text-lg font-semibold text-slate-900 dark:text-white">
+                <span className="font-display text-lg font-semibold text-white dark:text-white">
                   {tier.name}
                 </span>
                 {tier.id === currentTier && (
-                  <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)] dark:bg-white/10">
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)] dark:bg-white/10">
                     Current
                   </span>
                 )}
               </div>
-              <span className="font-display mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              <span className="font-display mt-2 text-2xl font-semibold tracking-tight text-white dark:text-white">
                 {tier.price}
                 <span className="text-sm font-normal text-[var(--muted)]"> / yr</span>
               </span>

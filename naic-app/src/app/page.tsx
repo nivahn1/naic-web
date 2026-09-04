@@ -173,10 +173,10 @@ export default async function Home() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="grain relative isolate overflow-hidden bg-[#07060f] text-white">
-          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#07060f_78%)]" />
+        <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
+          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#00004d_78%)]" />
           <div aria-hidden className="absolute -left-40 top-10 -z-20 h-[34rem] w-[34rem] rounded-full bg-fuchsia-600/25 blur-[130px]" />
-          <div aria-hidden className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-indigo-500/25 blur-[130px]" />
+          <div aria-hidden className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-[#f3cfc6]/15 blur-[130px]" />
           <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-60" />
 
           <div className="mx-auto max-w-6xl px-5 pb-24 pt-40 sm:px-8 sm:pb-28 sm:pt-48">
@@ -191,7 +191,7 @@ export default async function Home() {
 
               <h1 className="font-display mt-7 text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-[4.5rem]">
                 Advancing artificial intelligence,{" "}
-                <span className="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-indigo-200 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-[#f3cfc6] bg-clip-text text-transparent">
                   responsibly
                 </span>
               </h1>
@@ -206,7 +206,7 @@ export default async function Home() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a
                   href="#membership"
-                  className="group w-full rounded-2xl bg-white px-6 py-3.5 text-center text-sm font-semibold text-[#1a0f3e] shadow-xl shadow-violet-950/40 transition-transform hover:-translate-y-0.5 sm:w-auto"
+                  className="group w-full rounded-2xl bg-white px-6 py-3.5 text-center text-sm font-semibold text-[#00004d] shadow-xl shadow-violet-950/40 transition-transform hover:-translate-y-0.5 sm:w-auto"
                 >
                   Become a member
                   <span className="ml-1.5 inline-block transition-transform group-hover:translate-x-0.5">→</span>
@@ -250,7 +250,7 @@ export default async function Home() {
 
         {/* Mission & Vision */}
         <Section id="about" index="01" label="Mission & Vision">
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             A united community for the responsible advancement of AI.
           </h2>
           <div className="reveal mt-14 grid gap-5 md:grid-cols-2">
@@ -262,7 +262,7 @@ export default async function Home() {
                 key={c.h}
                 className="rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-8 backdrop-blur-sm"
               >
-                <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+                <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
                   {c.h}
                 </h3>
                 <p className="mt-4 leading-7 text-[var(--muted)]">{c.p}</p>
@@ -273,7 +273,7 @@ export default async function Home() {
 
         {/* Pillars — bento */}
         <Section index="02" label="What members get" tint>
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             Four pillars, one membership.
           </h2>
           <div className="reveal mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -284,10 +284,10 @@ export default async function Home() {
                   p.wide ? "lg:col-span-1 sm:col-span-2 lg:col-auto" : ""
                 }`}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/15 to-fuchsia-500/15 text-violet-500 ring-1 ring-inset ring-violet-500/20 dark:text-violet-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/15 to-fuchsia-500/15 text-violet-300 ring-1 ring-inset ring-violet-500/20">
                   <Spark />
                 </div>
-                <h3 className="font-display mt-5 text-lg font-semibold text-slate-900 dark:text-white">
+                <h3 className="font-display mt-5 text-lg font-semibold text-white dark:text-white">
                   {p.title}
                 </h3>
                 <p className="mt-2.5 flex-1 text-sm leading-6 text-[var(--muted)]">{p.body}</p>
@@ -308,7 +308,7 @@ export default async function Home() {
         <Section id="certification" index="03" label="Certification">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:items-center">
             <div className="reveal">
-              <h2 className="font-display mt-5 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+              <h2 className="font-display mt-5 text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
                 Credentials that prove you can lead with AI.
               </h2>
               <p className="mt-5 leading-7 text-[var(--muted)]">
@@ -320,7 +320,7 @@ export default async function Home() {
               </p>
               <a
                 href="#membership"
-                className="mt-8 inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
+                className="mt-8 inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
               >
                 Start your certification path
               </a>
@@ -335,7 +335,7 @@ export default async function Home() {
                     {c.code}
                   </div>
                   <div>
-                    <h3 className="font-display font-semibold text-slate-900 dark:text-white">{c.name}</h3>
+                    <h3 className="font-display font-semibold text-white dark:text-white">{c.name}</h3>
                     <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">{c.body}</p>
                   </div>
                 </div>
@@ -346,7 +346,7 @@ export default async function Home() {
 
         {/* Programs */}
         <Section id="programs" index="04" label="Programs & Training" tint>
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             Structured learning for every stage of an AI career.
           </h2>
           <div className="reveal mt-14 grid gap-5 md:grid-cols-3">
@@ -355,13 +355,13 @@ export default async function Home() {
                 key={p.title}
                 className="rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-7 transition-all hover:-translate-y-1 hover:border-violet-400/50"
               >
-                <h3 className="font-display text-lg font-semibold text-slate-900 dark:text-white">{p.title}</h3>
+                <h3 className="font-display text-lg font-semibold text-white dark:text-white">{p.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{p.body}</p>
               </article>
             ))}
           </div>
           <div className="reveal mt-6 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-7">
-            <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+            <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
               AI Training tracks
             </h3>
             <ul className="mt-4 flex flex-wrap gap-2.5">
@@ -382,7 +382,7 @@ export default async function Home() {
 
         {/* Membership */}
         <Section id="membership" index="05" label="Membership">
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             Choose the membership that matches your ambition.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-[var(--muted)]">
@@ -401,15 +401,15 @@ export default async function Home() {
                 }`}
               >
                 <div className="flex items-baseline justify-between">
-                  <h3 className="font-display text-lg font-semibold text-slate-900 dark:text-white">{t.name}</h3>
+                  <h3 className="font-display text-lg font-semibold text-white dark:text-white">{t.name}</h3>
                   {t.featured && (
-                    <span className="rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    <span className="rounded-full bg-gradient-to-br from-[#00004d] to-violet-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
                       Popular
                     </span>
                   )}
                 </div>
                 <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[var(--muted)]">{t.tag}</p>
-                <p className="font-display mt-4 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                <p className="font-display mt-4 text-4xl font-semibold tracking-tight text-white dark:text-white">
                   {t.price}
                   <span className="text-sm font-normal text-[var(--muted)]"> / yr</span>
                 </p>
@@ -425,8 +425,8 @@ export default async function Home() {
                   href="/signup"
                   className={`mt-6 rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
                     t.featured
-                      ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white"
-                      : "border border-[var(--surface-border)] text-slate-800 dark:text-white"
+                      ? "bg-gradient-to-br from-[#00004d] to-violet-600 text-white"
+                      : "border border-[var(--surface-border)] text-slate-200 dark:text-white"
                   }`}
                 >
                   {t.price === "$0" ? "Join free" : "Select plan"}
@@ -448,7 +448,7 @@ export default async function Home() {
             </div>
             <a
               href="#contact"
-              className="shrink-0 rounded-xl bg-white px-5 py-2.5 text-center text-sm font-semibold text-violet-800 transition-transform hover:-translate-y-0.5"
+              className="shrink-0 rounded-xl bg-white px-5 py-2.5 text-center text-sm font-semibold text-[#00004d] transition-transform hover:-translate-y-0.5"
             >
               Talk to partnerships
             </a>
@@ -457,7 +457,7 @@ export default async function Home() {
 
         {/* Convenings */}
         <Section id="events" index="06" label="Conferences & Convenings" tint>
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             Where the AI community meets in 2026.
           </h2>
           <div className="reveal mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -466,10 +466,10 @@ export default async function Home() {
                 key={c.name}
                 className="flex flex-col rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-7"
               >
-                <span className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+                <span className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-violet-300">
                   {c.when}
                 </span>
-                <h3 className="font-display mt-2 text-lg font-semibold text-slate-900 dark:text-white">{c.name}</h3>
+                <h3 className="font-display mt-2 text-lg font-semibold text-white dark:text-white">{c.name}</h3>
                 <p className="mt-2.5 flex-1 text-sm leading-6 text-[var(--muted)]">{c.body}</p>
               </article>
             ))}
@@ -482,22 +482,22 @@ export default async function Home() {
 
         {/* 2026 Calendar */}
         <Section id="calendar" index="07" label="2026 Calendar">
-          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+          <h2 className="font-display mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
             The year ahead, at a glance.
           </h2>
           <div className="reveal mt-14 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+              <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
                 Signature events & weeks
               </h3>
               <ul className="mt-5 divide-y divide-[var(--surface-border)] border-y border-[var(--surface-border)]">
                 {CALENDAR.map((e) => (
                   <li key={e.title} className="flex gap-4 py-3.5">
-                    <span className="w-28 shrink-0 font-display text-sm font-semibold text-slate-900 dark:text-white">
+                    <span className="w-28 shrink-0 font-display text-sm font-semibold text-white dark:text-white">
                       {e.date}
                     </span>
                     <span className="text-sm leading-6 text-[var(--muted)]">
-                      <span className="text-slate-900 dark:text-white">{e.title}</span>
+                      <span className="text-white dark:text-white">{e.title}</span>
                       {e.note ? <span className="block text-xs">{e.note}</span> : null}
                     </span>
                   </li>
@@ -505,7 +505,7 @@ export default async function Home() {
               </ul>
             </div>
             <div>
-              <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">
+              <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
                 2026 AI Webinar Series
               </h3>
               <ul className="mt-5 space-y-3">
@@ -517,7 +517,7 @@ export default async function Home() {
                     <span className="font-display text-xs font-semibold uppercase tracking-wide text-fuchsia-500 dark:text-fuchsia-400">
                       {w.date}
                     </span>
-                    <p className="mt-1 text-sm leading-6 text-slate-900 dark:text-white">{w.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-white dark:text-white">{w.title}</p>
                   </li>
                 ))}
               </ul>
@@ -531,10 +531,10 @@ export default async function Home() {
         {/* Recognition */}
         <Section id="recognition" index="08" label="Recognition" tint>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className="font-display mt-5 max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+            <h2 className="font-display mt-5 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
               Honoring the people advancing AI.
             </h2>
-            <p className="text-sm font-medium text-violet-600 dark:text-violet-300">
+            <p className="text-sm font-medium text-violet-300">
               Submission deadline · November 7, 2026
             </p>
           </div>
@@ -544,7 +544,7 @@ export default async function Home() {
                 key={r.title}
                 className="flex flex-col rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-7"
               >
-                <h3 className="font-display text-lg font-semibold text-slate-900 dark:text-white">{r.title}</h3>
+                <h3 className="font-display text-lg font-semibold text-white dark:text-white">{r.title}</h3>
                 <p className="mt-2.5 flex-1 text-sm leading-6 text-[var(--muted)]">{r.body}</p>
                 <ul className="mt-5 space-y-2 border-t border-[var(--surface-border)] pt-4">
                   {r.points.map((p) => (
@@ -563,7 +563,7 @@ export default async function Home() {
         <Section id="chapters" index="09" label="State Chapters">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="reveal">
-              <h2 className="font-display mt-5 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+              <h2 className="font-display mt-5 text-3xl font-semibold tracking-tight text-white sm:text-5xl dark:text-white">
                 A presence in all 50 states.
               </h2>
               <p className="mt-5 leading-7 text-[var(--muted)]">
@@ -576,11 +576,11 @@ export default async function Home() {
               <p className="mt-4 leading-7 text-[var(--muted)]">
                 Highlighted chapters are already live and driving local engagement
                 ahead of our full national launch in{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">2026</span>.
+                <span className="font-semibold text-white dark:text-white">2026</span>.
               </p>
               <a
                 href="#contact"
-                className="mt-8 inline-flex rounded-2xl border border-[var(--surface-border)] px-5 py-3 text-sm font-semibold text-slate-800 transition-colors hover:border-violet-400/50 dark:text-white"
+                className="mt-8 inline-flex rounded-2xl border border-[var(--surface-border)] px-5 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-violet-400/50 dark:text-white"
               >
                 Bring a chapter to your state
               </a>
@@ -596,7 +596,7 @@ export default async function Home() {
                     className={`font-display grid aspect-square place-items-center rounded-lg text-[11px] font-semibold ${
                       isLive(state.abbr)
                         ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
-                        : "bg-black/5 text-[var(--muted)] dark:bg-white/10"
+                        : "bg-white/10 text-[var(--muted)] dark:bg-white/10"
                     }`}
                   >
                     {state.abbr}
@@ -612,8 +612,8 @@ export default async function Home() {
         </Section>
 
         {/* Founder */}
-        <section className="grain relative isolate overflow-hidden bg-[#07060f] text-white">
-          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_120%_at_50%_0%,#331a66_0%,#150c3d_48%,#07060f_100%)]" />
+        <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
+          <div aria-hidden className="absolute inset-0 -z-30 bg-[radial-gradient(115%_120%_at_50%_0%,#331a66_0%,#150c3d_48%,#00004d_100%)]" />
           <div aria-hidden className="absolute left-1/2 top-0 -z-20 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[130px]" />
           <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-35" />
           <div className="mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-32">
@@ -659,7 +659,7 @@ export default async function Home() {
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href="#membership"
-                className="w-full rounded-2xl bg-white px-6 py-3.5 text-center text-sm font-semibold text-violet-800 transition-transform hover:-translate-y-0.5 sm:w-auto"
+                className="w-full rounded-2xl bg-white px-6 py-3.5 text-center text-sm font-semibold text-[#00004d] transition-transform hover:-translate-y-0.5 sm:w-auto"
               >
                 View membership plans
               </a>
@@ -700,7 +700,7 @@ function Section({
       }`}
     >
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-32">
-        <span className="inline-flex items-center gap-2.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-300">
+        <span className="inline-flex items-center gap-2.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">
           <span className="tabular-nums text-[var(--muted)]">{index}</span>
           <span className="h-px w-8 bg-gradient-to-r from-violet-400 to-transparent" />
           {label}

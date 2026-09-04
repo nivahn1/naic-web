@@ -27,7 +27,7 @@ export async function generateMetadata({
 }
 
 const HEADING =
-  "font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300";
+  "font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300";
 
 export default async function ProgramPage({
   params,
@@ -40,10 +40,10 @@ export default async function ProgramPage({
 
   return (
     <>
-      <section className="grain relative isolate overflow-hidden bg-[#07060f] text-white">
+      <section className="grain relative isolate overflow-hidden bg-[#00004d] text-white">
         <div
           aria-hidden
-          className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#07060f_80%)]"
+          className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#00004d_80%)]"
         />
         <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-5 pb-16 pt-36 text-center sm:px-8 sm:pb-20 sm:pt-44">
@@ -116,10 +116,10 @@ export default async function ProgramPage({
                 mark={p.emblem}
                 className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
               />
-              <h3 className="font-display mt-5 text-base font-semibold text-slate-900 dark:text-white">
+              <h3 className="font-display mt-5 text-base font-semibold text-white dark:text-white">
                 {p.name}
               </h3>
-              <span className="font-display mt-2 text-sm font-semibold text-violet-600 underline-offset-4 group-hover:underline dark:text-violet-300">
+              <span className="font-display mt-2 text-sm font-semibold text-violet-300 underline-offset-4 group-hover:underline dark:text-violet-300">
                 Learn More →
               </span>
             </Link>
