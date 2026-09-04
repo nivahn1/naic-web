@@ -17,5 +17,11 @@ export default async function LoginPage({
       ? redirect
       : "/portal";
 
-  return <LoginForm redirectTo={redirectTo} initialError={error} />;
+  return (
+    <LoginForm
+      redirectTo={redirectTo}
+      initialError={error}
+      adminMode={redirectTo.startsWith("/admin")}
+    />
+  );
 }

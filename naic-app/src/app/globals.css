@@ -15,6 +15,19 @@
   --surface: #ffffff;
   --surface-border: rgba(20, 18, 39, 0.1);
   --muted: #5b5878;
+
+  /* Dashboard charts. One violet hue, light -> dark: the admin charts all plot
+     magnitude, so a single sequential ramp is the whole palette. The dark-mode
+     steps below are chosen against the dark surface, not flipped. */
+  --chart-bar: #7c3aed;
+  --chart-track: rgba(124, 58, 237, 0.12);
+  --chart-axis: rgba(20, 18, 39, 0.14);
+  --ramp-1: #c4b5fd;
+  --ramp-2: #a78bfa;
+  --ramp-3: #8b5cf6;
+  --ramp-4: #7c3aed;
+  --ramp-5: #6d28d9;
+  --ramp-6: #4c1d95;
 }
 
 @theme inline {
@@ -34,6 +47,18 @@
     --surface: rgba(255, 255, 255, 0.035);
     --surface-border: rgba(255, 255, 255, 0.09);
     --muted: #a3a0c2;
+
+    /* On a near-black ground the ramp runs dark -> light, so "more" stays the
+       more prominent step. */
+    --chart-bar: #a78bfa;
+    --chart-track: rgba(167, 139, 250, 0.16);
+    --chart-axis: rgba(255, 255, 255, 0.14);
+    --ramp-1: #4c1d95;
+    --ramp-2: #5b21b6;
+    --ramp-3: #6d28d9;
+    --ramp-4: #7c3aed;
+    --ramp-5: #a78bfa;
+    --ramp-6: #c4b5fd;
   }
 }
 

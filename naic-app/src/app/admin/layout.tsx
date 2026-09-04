@@ -1,29 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Logo } from "../_components/Logo";
-import { getCurrentProfile } from "@/lib/profile";
-import { getTier } from "@/lib/tiers";
+import { requireAdmin } from "@/lib/admin";
 import { signOut } from "../auth/actions";
-import { PortalNav } from "./PortalNav";
+import { AdminNav } from "./AdminNav";
 
 export const metadata: Metadata = {
-  title: { default: "Member Portal", template: "%s — Member Portal" },
+  title: { default: "Admin", template: "%s — Admin" },
+  robots: { index: false, follow: false },
 };
 
-export default async function PortalLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, profile } = await getCurrentProfile();
-
-  // Belt-and-braces: proxy.ts already guards this, but never render the
-  // portal shell without a verified user.
-  if (!user) redirect("/login?redirect=/portal");
-
-  const tier = getTier(profile?.membership_tier);
-  const name = profile?.full_name || user.email || "Member";
+  // Redirects anyone who isn't a registered admin. proxy.ts turns them away
+  // first; this is the check that can't be skipped.
+  const { user, profile } = await requireAdmin();
 
   return (
     <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
@@ -34,11 +28,20 @@ export default async function PortalLayout({
             <span className="font-display text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
               National AI Consortium
             </span>
+            <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
+              Admin
+            </span>
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-xs text-[var(--muted)] sm:inline">
               {user.email}
             </span>
+            <Link
+              href="/portal"
+              className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-violet-400/50 dark:text-slate-200"
+            >
+              Member portal
+            </Link>
             <form action={signOut}>
               <button
                 type="submit"
@@ -56,24 +59,15 @@ export default async function PortalLayout({
           <aside className="lg:sticky lg:top-8 lg:self-start">
             <div className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-4">
               <p className="font-display text-sm font-semibold text-slate-900 dark:text-white">
-                {name}
+                {profile?.full_name || "Administrator"}
               </p>
               <p className="mt-0.5 text-xs text-[var(--muted)]">
-                {tier.name} member
+                Consortium admin
               </p>
             </div>
             <div className="mt-3">
-              <PortalNav />
+              <AdminNav />
             </div>
-            {profile?.role === "admin" && (
-              <Link
-                href="/admin"
-                className="mt-3 flex items-center justify-between rounded-xl border border-violet-500/30 bg-violet-500/10 px-3.5 py-2 text-sm font-semibold text-violet-700 transition-colors hover:border-violet-400/60 dark:text-violet-300"
-              >
-                Admin dashboard
-                <span aria-hidden>→</span>
-              </Link>
-            )}
           </aside>
 
           <div className="min-w-0">{children}</div>

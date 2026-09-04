@@ -29,8 +29,15 @@ const RESOURCES = [
   },
 ];
 
-export default async function PortalDashboard() {
-  const { user, profile } = await getCurrentProfile();
+export default async function PortalDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const [{ user, profile }, { error }] = await Promise.all([
+    getCurrentProfile(),
+    searchParams,
+  ]);
   const tier = getTier(profile?.membership_tier);
   const firstName = (profile?.full_name || "").trim().split(/\s+/)[0];
 
@@ -43,6 +50,12 @@ export default async function PortalDashboard() {
         You’re signed in as {user?.email}. Here’s what’s included with your
         membership.
       </p>
+
+      {error === "admin-only" && (
+        <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+          The admin dashboard is limited to registered administrators.
+        </p>
+      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-[1.3fr_1fr]">
         <div className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-6">

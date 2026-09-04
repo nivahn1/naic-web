@@ -2,10 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { TierId } from "@/lib/tiers";
 
+export type Role = "member" | "admin";
+
 export type Profile = {
   id: string;
   full_name: string | null;
   membership_tier: TierId;
+  role: Role;
   created_at: string;
   updated_at: string;
 };

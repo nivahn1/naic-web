@@ -71,16 +71,26 @@ function Card({
 export function LoginForm({
   redirectTo,
   initialError,
+  adminMode = false,
 }: {
   redirectTo: string;
   initialError?: string;
+  /** Same form, admin wording — set when the sign-in is headed for /admin. */
+  adminMode?: boolean;
 }) {
   const [state, formAction] = useActionState<AuthState, FormData>(login, {
     error: initialError,
   });
 
   return (
-    <Card title="Welcome back" subtitle="Sign in to your member portal.">
+    <Card
+      title={adminMode ? "Admin sign-in" : "Welcome back"}
+      subtitle={
+        adminMode
+          ? "Registered administrators only. Everyone else lands in the member portal."
+          : "Sign in to your member portal."
+      }
+    >
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="redirect" value={redirectTo} />
         <Alert state={state} />
@@ -133,6 +143,21 @@ export function LoginForm({
         <Link href="/signup" className="font-semibold text-violet-300 hover:text-white">
           Create an account
         </Link>
+      </p>
+
+      <p className="mt-3 border-t border-white/10 pt-4 text-center text-xs text-slate-400">
+        {adminMode ? (
+          <Link href="/login" className="font-medium hover:text-white">
+            ← Back to member sign-in
+          </Link>
+        ) : (
+          <Link
+            href="/login?redirect=/admin"
+            className="font-medium hover:text-white"
+          >
+            Consortium staff → admin dashboard
+          </Link>
+        )}
       </p>
     </Card>
   );
