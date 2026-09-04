@@ -57,16 +57,70 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Fine grain / noise overlay for depth */
+/* Fine grain / noise overlay for depth.
+   Deliberately NOT mix-blend-mode: overlay — a blended full-bleed layer forces
+   the whole band onto its own render surface and defeats layer caching, which
+   made scrolling re-rasterise several megapixels per frame. Straight alpha at a
+   lower opacity reads the same on these near-black grounds and composites free. */
 .grain::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
+  opacity: 0.19;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+/* Ambient colour wash behind the dark bands.
+   These were `blur-[130px]` on solid circles: a 130px Gaussian over a ~550px box
+   allocates a large render surface and runs a two-pass blur on every raster.
+   Painted as radial gradients instead — same soft blob, no filter cost. */
+.glow-hero {
+  background:
+    radial-gradient(
+      30rem 30rem at 7rem 19rem,
+      rgba(192, 38, 211, 0.26) 0%,
+      rgba(192, 38, 211, 0.2) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      28rem 28rem at calc(100% - 6rem) 26rem,
+      rgba(99, 102, 241, 0.26) 0%,
+      rgba(99, 102, 241, 0.2) 42%,
+      transparent 72%
+    );
+}
+.glow-founder {
+  background: radial-gradient(
+    24rem 24rem at 50% 14rem,
+    rgba(124, 58, 237, 0.26) 0%,
+    rgba(124, 58, 237, 0.2) 42%,
+    transparent 72%
+  );
+}
+.glow-page {
+  background: radial-gradient(
+    24rem 24rem at 4rem 4rem,
+    rgba(192, 38, 211, 0.22) 0%,
+    rgba(192, 38, 211, 0.17) 42%,
+    transparent 72%
+  );
+}
+.glow-auth {
+  background:
+    radial-gradient(
+      30rem 30rem at 7rem 19rem,
+      rgba(192, 38, 211, 0.21) 0%,
+      rgba(192, 38, 211, 0.16) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      28rem 28rem at calc(100% - 6rem) 26rem,
+      rgba(99, 102, 241, 0.21) 0%,
+      rgba(99, 102, 241, 0.16) 42%,
+      transparent 72%
+    );
 }
 
 /* Gradient hairline border via mask */

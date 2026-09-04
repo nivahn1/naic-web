@@ -46,6 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      // globals.css sets `scroll-behavior: smooth`; this opts back in to Next's
+      // override of it during route transitions, so navigations stay instant.
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${display.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

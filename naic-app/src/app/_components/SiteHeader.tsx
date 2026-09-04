@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 
 const NAV = [
@@ -16,12 +16,18 @@ const NAV = [
 export function SiteHeader({ authed = false }: { authed?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const sentinelRef = useRef<HTMLSpanElement>(null);
 
+  // A scroll listener here ran setScrolled on every scroll event; the sentinel
+  // lets the browser tell us about the one crossing we actually care about.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) =>
+      setScrolled(!entry.isIntersecting),
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   useEffect(() => {
@@ -32,96 +38,44 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:pt-5">
-      <div
-        className={`mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 transition-all duration-300 sm:px-4 ${
-          scrolled || open
-            ? "border-black/10 bg-white/80 shadow-lg shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/40"
-            : "border-transparent bg-transparent"
-        }`}
-      >
-        <Link href="/" className="flex items-center gap-2.5 pl-1">
-          <Logo className="h-8 w-8" />
-          <span className="font-display text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white">
-            National AI Consortium
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-1 lg:flex">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-black/5 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-2 lg:flex">
-          {authed ? (
-            <Link
-              href="/portal"
-              className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
-            >
-              Member portal
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
-              >
-                Join
-              </Link>
-            </>
-          )}
-        </div>
-
-        <button
-          type="button"
-          aria-label="Toggle menu"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 text-slate-700 lg:hidden dark:border-white/15 dark:text-slate-200"
+    <>
+      <span
+        ref={sentinelRef}
+        aria-hidden
+        className="pointer-events-none absolute left-0 top-4 h-px w-px"
+      />
+      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:pt-5">
+        <div
+          className={`mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 transition-[background-color,border-color,box-shadow] duration-300 sm:px-4 ${
+            scrolled || open
+              ? "border-black/10 bg-white/80 shadow-lg shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/40"
+              : "border-transparent bg-transparent"
+          }`}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            {open ? (
-              <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            ) : (
-              <path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            )}
-          </svg>
-        </button>
-      </div>
+          <Link href="/" className="flex items-center gap-2.5 pl-1">
+            <Logo className="h-8 w-8" />
+            <span className="font-display text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white">
+              National AI Consortium
+            </span>
+          </Link>
 
-      {open && (
-        <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-black/10 bg-white/90 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#0d0b1c]/95">
-          <nav className="flex flex-col">
+          <nav className="hidden items-center gap-1 lg:flex">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-700 hover:bg-black/5 dark:text-slate-200 dark:hover:bg-white/10"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-black/5 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="mt-2 grid grid-cols-2 gap-2 border-t border-black/10 pt-3 dark:border-white/10">
+
+          <div className="hidden items-center gap-2 lg:flex">
             {authed ? (
               <Link
                 href="/portal"
-                onClick={() => setOpen(false)}
-                className="col-span-2 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
               >
                 Member portal
               </Link>
@@ -129,23 +83,82 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
               <>
                 <Link
                   href="/login"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                  className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
                 >
                   Join
                 </Link>
               </>
             )}
           </div>
+
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 text-slate-700 lg:hidden dark:border-white/15 dark:text-slate-200"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              {open ? (
+                <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              ) : (
+                <path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
         </div>
-      )}
-    </header>
+
+        {open && (
+          <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-black/10 bg-white/90 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#0d0b1c]/95">
+            <nav className="flex flex-col">
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-700 hover:bg-black/5 dark:text-slate-200 dark:hover:bg-white/10"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-black/10 pt-3 dark:border-white/10">
+              {authed ? (
+                <Link
+                  href="/portal"
+                  onClick={() => setOpen(false)}
+                  className="col-span-2 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                >
+                  Member portal
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                  >
+                    Join
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+    </>
   );
 }

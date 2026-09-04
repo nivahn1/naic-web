@@ -13,14 +13,7 @@ export default function AuthLayout({
         aria-hidden
         className="absolute inset-0 -z-30 bg-[radial-gradient(115%_90%_at_50%_-15%,#3d1d7a_0%,#1a0f3e_42%,#07060f_78%)]"
       />
-      <div
-        aria-hidden
-        className="absolute -left-40 top-10 -z-20 h-[34rem] w-[34rem] rounded-full bg-fuchsia-600/20 blur-[130px]"
-      />
-      <div
-        aria-hidden
-        className="absolute -right-40 top-40 -z-20 h-[32rem] w-[32rem] rounded-full bg-indigo-500/20 blur-[130px]"
-      />
+      <div aria-hidden className="glow-auth absolute inset-0 -z-20" />
       <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
 
       <header className="px-5 py-5 sm:px-8">

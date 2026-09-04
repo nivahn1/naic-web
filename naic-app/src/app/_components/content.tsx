@@ -20,10 +20,7 @@ export function PageHeader({
         aria-hidden
         className="absolute inset-0 -z-30 bg-[radial-gradient(120%_120%_at_50%_-20%,#3d1d7a_0%,#1a0f3e_45%,#07060f_80%)]"
       />
-      <div
-        aria-hidden
-        className="absolute -left-40 -top-10 -z-20 h-[28rem] w-[28rem] rounded-full bg-fuchsia-600/20 blur-[130px]"
-      />
+      <div aria-hidden className="glow-page absolute inset-0 -z-20" />
       <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-50" />
       <div
         className={`mx-auto max-w-4xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20 sm:pt-44 ${
