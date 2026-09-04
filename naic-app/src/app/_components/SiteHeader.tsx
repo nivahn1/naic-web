@@ -4,8 +4,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
 
-const NAV = [
-  { href: "/about", label: "About" },
+const NAV: {
+  href: string;
+  label: string;
+  children?: { href: string; label: string }[];
+}[] = [
+  {
+    href: "/about",
+    label: "About",
+    children: [
+      { href: "/about#mission", label: "Mission & Vision" },
+      { href: "/about#founder", label: "Welcome Letter" },
+      { href: "/about/board-of-directors", label: "Board of Directors" },
+      { href: "/about/advisory-board", label: "Advisory Board" },
+    ],
+  },
   { href: "/programs", label: "Programs" },
   { href: "/training", label: "Training" },
   { href: "/events", label: "Events" },
@@ -45,15 +58,55 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV.map((item) =>
+            item.children ? (
+              <div key={item.href} className="group relative">
+                <button
+                  type="button"
+                  className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  {item.label}
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden
+                    className="mt-0.5 transition-transform group-hover:rotate-180"
+                  >
+                    <path
+                      d="M2 3.5 5 6.5 8 3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <div className="invisible absolute left-0 top-full z-10 pt-2 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div className="min-w-[220px] rounded-xl border border-white/15 bg-[#00004d]/95 p-1.5 shadow-xl backdrop-blur-xl">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
@@ -103,14 +156,29 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
         <div className="mx-auto mt-2 max-w-5xl rounded-2xl border border-white/15 bg-[#00004d]/95 p-3 shadow-xl backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-[#00004d]/95">
           <nav className="flex flex-col">
             {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
-              >
-                {item.label}
-              </Link>
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+                >
+                  {item.label}
+                </Link>
+                {item.children ? (
+                  <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setOpen(false)}
+                        className="rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ))}
           </nav>
           <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 dark:border-white/10">
