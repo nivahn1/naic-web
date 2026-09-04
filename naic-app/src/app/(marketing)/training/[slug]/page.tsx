@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -53,13 +54,26 @@ export default async function TrainingDetailPage({
           >
             ← All training
           </Link>
-          <Seal
-            id={training.slug}
-            label={training.name}
-            mark={training.emblem}
-            tone="dark"
-            className="h-44 w-44 sm:h-52 sm:w-52"
-          />
+          {training.logo ? (
+            <div className="flex h-44 w-44 items-center justify-center sm:h-52 sm:w-52">
+              <Image
+                src={training.logo.src}
+                alt={training.name}
+                width={training.logo.width}
+                height={training.logo.height}
+                priority
+                className="h-auto w-full object-contain"
+              />
+            </div>
+          ) : (
+            <Seal
+              id={training.slug}
+              label={training.name}
+              mark={training.emblem}
+              tone="dark"
+              className="h-44 w-44 sm:h-52 sm:w-52"
+            />
+          )}
           <h1 className="font-display text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
             {training.name}
           </h1>
@@ -113,12 +127,25 @@ export default async function TrainingDetailPage({
               href={`/training/${t.slug}`}
               className="group flex flex-col items-center text-center"
             >
-              <Seal
-                id={t.slug}
-                label={t.name}
-                mark={t.emblem}
-                className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
-              />
+              {t.logo ? (
+                <div className="flex h-32 w-32 items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+                  <Image
+                    src={t.logo.src}
+                    alt={t.name}
+                    width={t.logo.width}
+                    height={t.logo.height}
+                    className="h-auto w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <Seal
+                  id={t.slug}
+                  label={t.name}
+                  mark={t.emblem}
+                  tone="dark"
+                  className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
+                />
+              )}
               <h3 className="font-display mt-5 text-base font-semibold text-white dark:text-white">
                 {t.name}
               </h3>

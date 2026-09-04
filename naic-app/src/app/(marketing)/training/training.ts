@@ -3,8 +3,11 @@ import type { SealMark } from "../../_components/Seal";
 export type Training = {
   slug: string;
   name: string;
-  /** Curved lettering and center mark for the training seal. */
+  /** Curved lettering and center mark for the training seal — used as a
+   *  fallback where there's no dedicated `logo` lockup. */
   emblem: SealMark;
+  /** Program logo lockup — dark ink on a transparent PNG, needs a light card behind it. */
+  logo?: { src: string; width: number; height: number };
   /** Short pitch shown under the seal on the index page. */
   blurb: string;
   overview: string;
@@ -19,6 +22,11 @@ export const TRAININGS: Training[] = [
   {
     slug: "business-transformation",
     name: "AI for Business Transformation™",
+    logo: {
+      src: "/brand/training/business-transformation.png",
+      width: 364,
+      height: 106,
+    },
     emblem: {
       top: "AI FOR BUSINESS",
       bottom: "TRANSFORMATION",
@@ -46,6 +54,11 @@ export const TRAININGS: Training[] = [
   {
     slug: "policy-regulation-compliance",
     name: "AI Policy, Regulation & Compliance™",
+    logo: {
+      src: "/brand/training/policy-regulation-compliance.png",
+      width: 616,
+      height: 128,
+    },
     emblem: {
       top: "AI POLICY",
       bottom: "& COMPLIANCE",
@@ -73,6 +86,11 @@ export const TRAININGS: Training[] = [
   {
     slug: "generative-ai",
     name: "Generative AI & Creative Innovation™",
+    logo: {
+      src: "/brand/training/generative-ai.png",
+      width: 613,
+      height: 249,
+    },
     emblem: {
       top: "GENERATIVE AI",
       bottom: "& INNOVATION",

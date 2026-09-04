@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   PageHeader,
@@ -35,13 +36,25 @@ export default function TrainingPage() {
               href={`/training/${t.slug}`}
               className="group flex flex-col items-center text-center"
             >
-              <Seal
-                id={t.slug}
-                label={t.name}
-                mark={t.emblem}
-                tone="dark"
-                className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
-              />
+              {t.logo ? (
+                <div className="flex h-52 w-52 items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60">
+                  <Image
+                    src={t.logo.src}
+                    alt={t.name}
+                    width={t.logo.width}
+                    height={t.logo.height}
+                    className="h-auto w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <Seal
+                  id={t.slug}
+                  label={t.name}
+                  mark={t.emblem}
+                  tone="dark"
+                  className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
+                />
+              )}
               <h2 className="font-display mt-8 text-xl font-semibold tracking-tight text-white sm:text-2xl dark:text-white">
                 {t.name}
               </h2>
