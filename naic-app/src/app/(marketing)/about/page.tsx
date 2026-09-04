@@ -103,28 +103,7 @@ export default function AboutPage() {
       </Section>
 
       <Section>
-        <div id="advisory">
-          <SectionTitle>Advisory Board</SectionTitle>
-          <Lead>
-            The Advisory Board brings together distinguished leaders from
-            academia, industry, government, and the nonprofit sector to provide
-            strategic guidance and thought leadership. Serving as trusted
-            advisors, they help shape the Consortium&rsquo;s programs,
-            partnerships, and long-term vision — with expertise spanning
-            artificial intelligence, policy, business transformation, and
-            workforce development.
-          </Lead>
-          <div className="mt-6">
-            <a
-              href="mailto:web@nationalaiconsortium.org?subject=Advisory%20Board%20interest"
-              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
-            >
-              Express interest in joining
-            </a>
-          </div>
-        </div>
-
-        <div id="board" className="mt-14">
+        <div id="board">
           <SectionTitle>Board of Directors</SectionTitle>
           <Lead>
             The Consortium&rsquo;s Board of Directors brings together leaders from
@@ -137,6 +116,27 @@ export default function AboutPage() {
               className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Meet the Board
+            </Link>
+          </div>
+        </div>
+
+        <div id="advisory" className="mt-14">
+          <SectionTitle>Advisory Board</SectionTitle>
+          <Lead>
+            The Advisory Board brings together distinguished leaders from
+            academia, industry, government, and the nonprofit sector to provide
+            strategic guidance and thought leadership. Serving as trusted
+            advisors, they help shape the Consortium&rsquo;s programs,
+            partnerships, and long-term vision — with expertise spanning
+            artificial intelligence, policy, business transformation, and
+            workforce development.
+          </Lead>
+          <div className="mt-6">
+            <Link
+              href="/about/advisory-board"
+              className="inline-flex rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              Express interest in joining
             </Link>
           </div>
         </div>
