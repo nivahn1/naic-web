@@ -37,13 +37,13 @@ export default function TrainingPage() {
               className="group flex flex-col items-center text-center"
             >
               {t.logo ? (
-                <div className="flex h-52 w-52 items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60">
+                <div className="flex h-28 w-full max-w-[320px] items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-32 sm:max-w-[380px]">
                   <Image
                     src={t.logo.src}
                     alt={t.name}
                     width={t.logo.width}
                     height={t.logo.height}
-                    className="h-auto w-full object-contain"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               ) : (

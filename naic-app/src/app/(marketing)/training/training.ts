@@ -119,6 +119,11 @@ export const TRAININGS: Training[] = [
   {
     slug: "customized",
     name: "Customized AI Training",
+    logo: {
+      src: "/brand/training/customized.png",
+      width: 1774,
+      height: 887,
+    },
     emblem: {
       top: "CUSTOMIZED AI",
       bottom: "TRAINING",

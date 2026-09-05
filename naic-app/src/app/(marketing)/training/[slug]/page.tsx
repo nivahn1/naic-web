@@ -55,14 +55,14 @@ export default async function TrainingDetailPage({
             ← All training
           </Link>
           {training.logo ? (
-            <div className="flex h-44 w-44 items-center justify-center sm:h-52 sm:w-52">
+            <div className="flex h-24 w-full max-w-[320px] items-center justify-center sm:h-28 sm:max-w-[380px]">
               <Image
                 src={training.logo.src}
                 alt={training.name}
                 width={training.logo.width}
                 height={training.logo.height}
                 priority
-                className="h-auto w-full object-contain"
+                className="h-full w-full object-contain"
               />
             </div>
           ) : (
@@ -128,13 +128,13 @@ export default async function TrainingDetailPage({
               className="group flex flex-col items-center text-center"
             >
               {t.logo ? (
-                <div className="flex h-32 w-32 items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="flex h-16 w-full max-w-[220px] items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
                   <Image
                     src={t.logo.src}
                     alt={t.name}
                     width={t.logo.width}
                     height={t.logo.height}
-                    className="h-auto w-full object-contain"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               ) : (
