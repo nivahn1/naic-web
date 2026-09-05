@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -53,13 +54,24 @@ export default async function ProgramPage({
           >
             ← All programs
           </Link>
-          <Seal
-            id={program.slug}
-            label={program.name}
-            mark={program.emblem}
-            tone="dark"
-            className="h-44 w-44 sm:h-52 sm:w-52"
-          />
+          {program.logo ? (
+            <Image
+              src={program.logo.src}
+              alt={program.name}
+              width={program.logo.width}
+              height={program.logo.height}
+              priority
+              className="h-44 w-44 object-contain sm:h-52 sm:w-52"
+            />
+          ) : (
+            <Seal
+              id={program.slug}
+              label={program.name}
+              mark={program.emblem}
+              tone="dark"
+              className="h-44 w-44 sm:h-52 sm:w-52"
+            />
+          )}
           <h1 className="font-display text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
             {program.name}
           </h1>
@@ -110,12 +122,23 @@ export default async function ProgramPage({
               href={`/programs/${p.slug}`}
               className="group flex flex-col items-center text-center"
             >
-              <Seal
-                id={p.slug}
-                label={p.name}
-                mark={p.emblem}
-                className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
-              />
+              {p.logo ? (
+                <Image
+                  src={p.logo.src}
+                  alt={p.name}
+                  width={p.logo.width}
+                  height={p.logo.height}
+                  className="h-32 w-32 object-contain transition-transform duration-300 group-hover:-translate-y-1"
+                />
+              ) : (
+                <Seal
+                  id={p.slug}
+                  label={p.name}
+                  mark={p.emblem}
+                  tone="dark"
+                  className="h-32 w-32 transition-transform duration-300 group-hover:-translate-y-1"
+                />
+              )}
               <h3 className="font-display mt-5 text-base font-semibold text-white dark:text-white">
                 {p.name}
               </h3>
