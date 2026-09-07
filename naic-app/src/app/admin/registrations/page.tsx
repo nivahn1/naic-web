@@ -1,0 +1,226 @@
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import { deleteRegistration, setRegistrationStatus } from "../actions";
+import { RowMenu } from "../_components/RowMenu";
+import {
+  Card,
+  EmptyRow,
+  ExportButton,
+  FilterTabs,
+  Flash,
+  PageTitle,
+  Pill,
+  StatCard,
+  Table,
+  Td,
+  Th,
+  formatDateTime,
+  formatMoney,
+  type PillTone,
+} from "../_components/ui";
+import { orIlike, pickFilter, sanitizeQuery, type AdminSearchParams } from "../query";
+
+export const metadata: Metadata = { title: "Registrations" };
+
+const STATUSES = ["pending", "paid", "cancelled"] as const;
+type Status = (typeof STATUSES)[number];
+
+const TONE: Record<Status, PillTone> = {
+  paid: "green",
+  pending: "amber",
+  cancelled: "rose",
+};
+
+type Registration = {
+  id: string;
+  program_name: string;
+  program_slug: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  billing_street: string;
+  billing_city: string;
+  billing_state: string;
+  billing_zip: string;
+  amount_cents: number;
+  status: Status;
+  stripe_checkout_session_id: string | null;
+  created_at: string;
+};
+
+export default async function RegistrationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<AdminSearchParams>;
+}) {
+  const { q, status, notice, error } = await searchParams;
+  const term = sanitizeQuery(q);
+  const filter = pickFilter(status, STATUSES);
+
+  const supabase = await createClient();
+
+  let query = supabase
+    .from("program_registrations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (filter) query = query.eq("status", filter);
+  if (term) {
+    query = query.or(orIlike(["full_name", "email", "program_name"], term));
+  }
+
+  const [rowsRes, allRes] = await Promise.all([
+    query.limit(500),
+    // Unfiltered, for the tile totals and the chip counts.
+    supabase.from("program_registrations").select("status, amount_cents"),
+  ]);
+
+  const rows = (rowsRes.data ?? []) as Registration[];
+  const all = (allRes.data ?? []) as Pick<Registration, "status" | "amount_cents">[];
+
+  const countBy = (s: Status) => all.filter((r) => r.status === s).length;
+  const paidRevenue = all
+    .filter((r) => r.status === "paid")
+    .reduce((sum, r) => sum + r.amount_cents, 0);
+
+  return (
+    <div>
+      <PageTitle
+        title="Registrations"
+        lead="Program registrations, including those that never finished paying."
+        action={<ExportButton table="registrations" />}
+      />
+
+      <Flash notice={notice} error={error ?? rowsRes.error?.message} />
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Total registrations"
+          value={all.length.toLocaleString()}
+          hint="all time"
+        />
+        <StatCard
+          label="Revenue collected"
+          value={formatMoney(paidRevenue)}
+          hint={`${countBy("paid")} paid`}
+        />
+        <StatCard
+          label="Awaiting payment"
+          value={countBy("pending").toLocaleString()}
+          hint="started checkout, never confirmed"
+        />
+      </div>
+
+      <div className="mt-6">
+        <FilterTabs
+          basePath="/admin/registrations"
+          current={filter}
+          q={term || undefined}
+          options={[
+            { value: "", label: "All", count: all.length },
+            { value: "paid", label: "Paid", count: countBy("paid") },
+            { value: "pending", label: "Pending", count: countBy("pending") },
+            { value: "cancelled", label: "Cancelled", count: countBy("cancelled") },
+          ]}
+        />
+      </div>
+
+      <Card className="mt-4">
+        <Table>
+          <thead>
+            <tr>
+              <Th>Registrant</Th>
+              <Th>Program</Th>
+              <Th>Billing address</Th>
+              <Th className="text-right">Amount</Th>
+              <Th>Status</Th>
+              <Th>Submitted</Th>
+              <Th className="w-12" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <EmptyRow
+                colSpan={7}
+                message={
+                  term || filter
+                    ? "No registrations match that search."
+                    : "No registrations yet."
+                }
+              />
+            )}
+            {rows.map((row) => (
+              <tr key={row.id} className="transition-colors hover:bg-white/[0.03]">
+                <Td>
+                  <p className="font-medium text-white">{row.full_name}</p>
+                  <p className="text-xs text-[var(--muted)]">{row.email}</p>
+                  {row.phone && (
+                    <p className="text-xs text-[var(--muted)]">{row.phone}</p>
+                  )}
+                </Td>
+                <Td>
+                  <p className="text-sm">{row.program_name}</p>
+                  {row.stripe_checkout_session_id && (
+                    <p
+                      className="text-xs text-[var(--muted)]"
+                      title={row.stripe_checkout_session_id}
+                    >
+                      Stripe {row.stripe_checkout_session_id.slice(-8)}
+                    </p>
+                  )}
+                </Td>
+                <Td className="text-xs text-[var(--muted)]">
+                  {row.billing_street}
+                  <br />
+                  {row.billing_city}, {row.billing_state} {row.billing_zip}
+                </Td>
+                <Td className="text-right font-medium tabular-nums text-white">
+                  {formatMoney(row.amount_cents)}
+                </Td>
+                <Td>
+                  <Pill tone={TONE[row.status] ?? "slate"}>{row.status}</Pill>
+                </Td>
+                <Td className="whitespace-nowrap text-xs text-[var(--muted)]">
+                  {formatDateTime(row.created_at)}
+                </Td>
+                <Td className="text-right">
+                  <RowMenu
+                    id={row.id}
+                    redirectTo="/admin/registrations"
+                    items={[
+                      {
+                        group: "Set status",
+                        label: "Mark paid",
+                        action: setRegistrationStatus,
+                        fields: { status: "paid" },
+                      },
+                      {
+                        group: "Set status",
+                        label: "Mark pending",
+                        action: setRegistrationStatus,
+                        fields: { status: "pending" },
+                      },
+                      {
+                        group: "Set status",
+                        label: "Mark cancelled",
+                        action: setRegistrationStatus,
+                        fields: { status: "cancelled" },
+                      },
+                      {
+                        group: "Danger zone",
+                        label: "Delete registration",
+                        action: deleteRegistration,
+                        danger: true,
+                        confirmLabel: "Click again to delete",
+                      },
+                    ]}
+                  />
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+    </div>
+  );
+}
