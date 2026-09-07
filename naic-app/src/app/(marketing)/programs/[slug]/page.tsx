@@ -152,10 +152,14 @@ export default async function ProgramPage({
 
       <Section>
         <CtaRow
-          text={`Join the Consortium to enroll in the next ${program.name} cohort and access member pricing.`}
+          text={`Register for ${program.name} — $999 per seat — or join the Consortium for member pricing.`}
           actions={[
-            { label: "Become a member", href: "/signup", primary: true },
-            { label: "Contact us", href: "/about" },
+            {
+              label: "Register — $999",
+              href: `/programs/register?program=${program.slug}`,
+              primary: true,
+            },
+            { label: "Become a member", href: "/signup" },
           ]}
         />
         <RelatedLinks

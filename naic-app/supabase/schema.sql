@@ -172,3 +172,45 @@ create policy "Anyone may upload an advisory application file"
   on storage.objects for insert
   to anon, authenticated
   with check (bucket_id = 'advisory-applications');
+
+-- 8. Program registrations ---------------------------------------------------
+
+-- Registration intent is recorded immediately at insert (status 'pending'),
+-- before the person ever reaches Stripe. Payment happens entirely on
+-- Stripe's hosted Checkout page — card data never touches this table or
+-- this app's server. Once Stripe confirms payment, the success page
+-- updates `status` to 'paid' using the service-role client (the anon/
+-- authenticated insert policy below intentionally grants no update access).
+create table if not exists public.program_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  program_slug                text not null,
+  program_name                text not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  amount_cents                integer not null default 99900,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.program_registrations enable row level security;
+
+-- Public may only insert (create a pending registration). No select/update/
+-- delete policy exists, so reading or marking-paid requires the service
+-- role — which RLS does not apply to.
+drop policy if exists "Anyone may submit a program registration" on public.program_registrations;
+create policy "Anyone may submit a program registration"
+  on public.program_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists program_registrations_created_at_idx
+  on public.program_registrations (created_at desc);

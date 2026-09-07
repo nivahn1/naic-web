@@ -62,10 +62,10 @@ export default function ProgramsPage() {
 
       <Section tint>
         <CtaRow
-          text="Join the Consortium to enroll in a program cohort and access member pricing."
+          text="Register for any individual program for $999, or join the Consortium for member pricing."
           actions={[
-            { label: "Become a member", href: "/signup", primary: true },
-            { label: "See training options", href: "/training" },
+            { label: "Register — $999", href: "/programs/register", primary: true },
+            { label: "Become a member", href: "/signup" },
           ]}
         />
         <RelatedLinks
