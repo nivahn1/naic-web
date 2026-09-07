@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "../_components/Logo";
 import { getCurrentProfile } from "@/lib/profile";
+import { isCurrentUserAdmin } from "@/lib/admin";
 import { getTier } from "@/lib/tiers";
 import { signOut } from "../auth/actions";
 import { PortalNav } from "./PortalNav";
@@ -17,6 +18,7 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   const { user, profile } = await getCurrentProfile();
+  const isAdmin = await isCurrentUserAdmin();
 
   // Belt-and-braces: proxy.ts already guards this, but never render the
   // portal shell without a verified user.
@@ -62,6 +64,15 @@ export default async function PortalLayout({
             <div className="mt-3">
               <PortalNav />
             </div>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-violet-400/30 bg-violet-500/10 px-3.5 py-2.5 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-400/60 hover:text-white"
+              >
+                Admin dashboard
+                <span aria-hidden>&rarr;</span>
+              </Link>
+            )}
           </aside>
 
           <div className="min-w-0">{children}</div>

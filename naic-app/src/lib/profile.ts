@@ -2,10 +2,17 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { TierId } from "@/lib/tiers";
 
+export type Role = "member" | "admin";
+
+export const ROLES: Role[] = ["member", "admin"];
+
 export type Profile = {
   id: string;
   full_name: string | null;
+  /** Mirrored from auth.users by a trigger — auth.users isn't reachable over PostgREST. */
+  email: string | null;
   membership_tier: TierId;
+  role: Role;
   created_at: string;
   updated_at: string;
 };
