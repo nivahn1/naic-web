@@ -2,7 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./config";
 
-const PROTECTED_PREFIX = "/portal";
+// /admin additionally requires role = 'admin', but that needs a DB read —
+// too costly for every request. The proxy only proves you are signed in;
+// the /admin layout does the role check (and RLS enforces it regardless).
+const PROTECTED_PREFIXES = ["/portal", "/admin"];
 const AUTH_ROUTES = ["/login", "/signup"];
 
 /**
@@ -42,7 +45,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (!user && pathname.startsWith(PROTECTED_PREFIX)) {
+  if (!user && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);

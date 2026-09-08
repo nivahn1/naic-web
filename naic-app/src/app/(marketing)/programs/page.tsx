@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { PageHeader, Section, CtaRow, RelatedLinks } from "../../_components/content";
 import { Seal } from "../../_components/Seal";
@@ -28,13 +29,23 @@ export default function ProgramsPage() {
               href={`/programs/${p.slug}`}
               className="group flex flex-col items-center text-center"
             >
-              <Seal
-                id={p.slug}
-                label={p.name}
-                mark={p.emblem}
-                tone="dark"
-                className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
-              />
+              {p.logo ? (
+                <Image
+                  src={p.logo.src}
+                  alt={p.name}
+                  width={p.logo.width}
+                  height={p.logo.height}
+                  className="h-52 w-52 object-contain transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
+                />
+              ) : (
+                <Seal
+                  id={p.slug}
+                  label={p.name}
+                  mark={p.emblem}
+                  tone="dark"
+                  className="h-52 w-52 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-60 sm:w-60"
+                />
+              )}
               <h2 className="font-display mt-8 text-xl font-semibold tracking-tight text-white sm:text-2xl dark:text-white">
                 {p.name}
               </h2>
@@ -51,10 +62,10 @@ export default function ProgramsPage() {
 
       <Section tint>
         <CtaRow
-          text="Join the Consortium to enroll in a program cohort and access member pricing."
+          text="Register for any individual program for $999, or join the Consortium for member pricing."
           actions={[
-            { label: "Become a member", href: "/signup", primary: true },
-            { label: "See training options", href: "/training" },
+            { label: "Register — $999", href: "/programs/register", primary: true },
+            { label: "Become a member", href: "/signup" },
           ]}
         />
         <RelatedLinks

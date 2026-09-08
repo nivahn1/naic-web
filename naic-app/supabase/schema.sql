@@ -172,3 +172,285 @@ create policy "Anyone may upload an advisory application file"
   on storage.objects for insert
   to anon, authenticated
   with check (bucket_id = 'advisory-applications');
+
+-- 8. Program registrations ---------------------------------------------------
+
+-- Registration intent is recorded immediately at insert (status 'pending'),
+-- before the person ever reaches Stripe. Payment happens entirely on
+-- Stripe's hosted Checkout page — card data never touches this table or
+-- this app's server. Once Stripe confirms payment, the success page
+-- updates `status` to 'paid' using the service-role client (the anon/
+-- authenticated insert policy below intentionally grants no update access).
+create table if not exists public.program_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  program_slug                text not null,
+  program_name                text not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  amount_cents                integer not null default 99900,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.program_registrations enable row level security;
+
+-- Public may only insert (create a pending registration). No select/update/
+-- delete policy exists, so reading or marking-paid requires the service
+-- role — which RLS does not apply to.
+drop policy if exists "Anyone may submit a program registration" on public.program_registrations;
+create policy "Anyone may submit a program registration"
+  on public.program_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists program_registrations_created_at_idx
+  on public.program_registrations (created_at desc);
+
+-- 9. Admin role ---------------------------------------------------------------
+
+-- Admins are ordinary members with `role = 'admin'`. There is no separate
+-- admin table and no service-role dependency for reads: every admin-only
+-- query below is enforced by Postgres itself, so a bug in the app layer
+-- cannot leak submissions.
+alter table public.profiles
+  add column if not exists role text not null default 'member'
+  check (role in ('member', 'admin'));
+
+-- Email is duplicated onto the profile so the admin tables can search and
+-- sort by it. auth.users is not reachable over PostgREST.
+alter table public.profiles
+  add column if not exists email text;
+
+-- `security definer` is essential: is_admin() reads public.profiles, and it
+-- is used inside a policy ON public.profiles. Running as the definer skips
+-- RLS on that read and avoids infinite policy recursion.
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = (select auth.uid())
+      and role = 'admin'
+  );
+$$;
+
+revoke execute on function public.is_admin() from anon, public;
+grant execute on function public.is_admin() to authenticated;
+
+-- Keep the profile's email in sync with the auth record.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, full_name, email)
+  values (new.id, new.raw_user_meta_data ->> 'full_name', new.email)
+  on conflict (id) do update set email = excluded.email;
+  return new;
+end;
+$$;
+
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
+
+create or replace function public.handle_user_email_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.profiles set email = new.email where id = new.id;
+  return new;
+end;
+$$;
+
+revoke execute on function public.handle_user_email_change() from anon, authenticated, public;
+
+drop trigger if exists on_auth_user_email_changed on auth.users;
+create trigger on_auth_user_email_changed
+  after update of email on auth.users
+  for each row execute function public.handle_user_email_change();
+
+-- Backfill emails for users that signed up before this column existed.
+update public.profiles p
+set email = u.email
+from auth.users u
+where u.id = p.id
+  and p.email is distinct from u.email;
+
+-- 10. Review status on the two submission tables ------------------------------
+
+alter table public.nominations
+  add column if not exists review_status text not null default 'new'
+  check (review_status in ('new', 'reviewed', 'shortlisted', 'archived'));
+
+alter table public.advisory_applications
+  add column if not exists review_status text not null default 'new'
+  check (review_status in ('new', 'reviewed', 'approved', 'archived'));
+
+-- 11. Admin policies ----------------------------------------------------------
+
+-- Permissive policies OR together, so these sit alongside the owner-only and
+-- insert-only policies above rather than replacing them.
+
+drop policy if exists "Admins may view every profile" on public.profiles;
+create policy "Admins may view every profile"
+  on public.profiles for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update every profile" on public.profiles;
+create policy "Admins may update every profile"
+  on public.profiles for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- No delete policy on profiles: removing a member goes through the Supabase
+-- Auth admin API (auth.users), and the FK cascade drops the profile row.
+
+drop policy if exists "Admins may view nominations" on public.nominations;
+create policy "Admins may view nominations"
+  on public.nominations for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update nominations" on public.nominations;
+create policy "Admins may update nominations"
+  on public.nominations for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins may delete nominations" on public.nominations;
+create policy "Admins may delete nominations"
+  on public.nominations for delete
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may view advisory applications" on public.advisory_applications;
+create policy "Admins may view advisory applications"
+  on public.advisory_applications for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update advisory applications" on public.advisory_applications;
+create policy "Admins may update advisory applications"
+  on public.advisory_applications for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins may delete advisory applications" on public.advisory_applications;
+create policy "Admins may delete advisory applications"
+  on public.advisory_applications for delete
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may view program registrations" on public.program_registrations;
+create policy "Admins may view program registrations"
+  on public.program_registrations for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update program registrations" on public.program_registrations;
+create policy "Admins may update program registrations"
+  on public.program_registrations for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins may delete program registrations" on public.program_registrations;
+create policy "Admins may delete program registrations"
+  on public.program_registrations for delete
+  to authenticated
+  using (public.is_admin());
+
+-- Admins can read (and clean up) the private advisory bio/headshot files, so
+-- the dashboard can hand out short-lived signed download links.
+drop policy if exists "Admins may read advisory application files" on storage.objects;
+create policy "Admins may read advisory application files"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'advisory-applications' and public.is_admin());
+
+drop policy if exists "Admins may delete advisory application files" on storage.objects;
+create policy "Admins may delete advisory application files"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'advisory-applications' and public.is_admin());
+
+-- 12. Promote your first admin ------------------------------------------------
+
+-- Nobody is an admin until you say so. Sign up through the site first, then
+-- uncomment this line with your own address and run it once. After that you
+-- can promote and demote everyone else from /admin/members.
+--
+-- update public.profiles set role = 'admin' where email = 'you@example.com';
+
+-- 13. Column-level write hardening -------------------------------------------
+
+-- RLS alone does NOT secure the role column. The owner-update policy in
+-- section 2 lets a member update their own row, and an RLS policy cannot
+-- express *which columns* changed -- `with check` only sees the resulting
+-- row. So with a table-wide UPDATE grant, any signed-in member could
+--
+--   PATCH /rest/v1/profiles?id=eq.<their own id>   {"role": "admin"}
+--
+-- and promote themselves. Column-level grants are checked before RLS is
+-- consulted, which is what actually closes this off. Members may write only
+-- their display name and their chosen plan; nothing can write `role` over
+-- the REST API at all.
+revoke update on public.profiles from anon, authenticated;
+grant update (full_name, membership_tier) on public.profiles to authenticated;
+
+-- 14. Guarded role changes ----------------------------------------------------
+
+-- Because of the grant above, even an admin cannot write `role` directly.
+-- Role changes go through this function instead: it runs as its definer (so
+-- the grant does not apply), but refuses to do anything unless the *caller*
+-- is an admin. Same shape as admin_metrics()/admin_members().
+create or replace function public.admin_set_member_role(target uuid, new_role text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Not authorized' using errcode = '42501';
+  end if;
+
+  if new_role not in ('member', 'admin') then
+    raise exception 'Invalid role' using errcode = '22023';
+  end if;
+
+  -- Enforced here as well as in the app, so the last admin cannot lock
+  -- everyone out even by calling the RPC directly.
+  if target = (select auth.uid()) and new_role <> 'admin' then
+    raise exception 'You cannot remove your own admin access'
+      using errcode = '42501';
+  end if;
+
+  update public.profiles set role = new_role where id = target;
+end;
+$$;
+
+revoke execute on function public.admin_set_member_role(uuid, text) from anon, public;
+grant execute on function public.admin_set_member_role(uuid, text) to authenticated;

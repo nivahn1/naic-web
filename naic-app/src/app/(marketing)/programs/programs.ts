@@ -3,8 +3,11 @@ import type { SealMark } from "../../_components/Seal";
 export type Program = {
   slug: string;
   name: string;
-  /** Curved lettering and center mark for the program seal. */
+  /** Curved lettering and center mark for the program seal — used as a
+   *  fallback where there's no dedicated `logo` badge. */
   emblem: SealMark;
+  /** Program logo badge (square, transparent outside the circle). */
+  logo?: { src: string; width: number; height: number };
   /** Short pitch shown under the seal on the index page. */
   blurb: string;
   overview: string;
@@ -17,6 +20,11 @@ export const PROGRAMS: Program[] = [
   {
     slug: "emerging-leadership",
     name: "AI Emerging Leadership Program",
+    logo: {
+      src: "/brand/programs/emerging-leadership.png",
+      width: 1254,
+      height: 1254,
+    },
     emblem: {
       top: "AI EMERGING",
       bottom: "LEADERSHIP PROGRAM",
@@ -55,6 +63,11 @@ export const PROGRAMS: Program[] = [
   {
     slug: "ai-ethics",
     name: "AI Ethics Program",
+    logo: {
+      src: "/brand/programs/ai-ethics.png",
+      width: 1254,
+      height: 1254,
+    },
     emblem: {
       top: "AI ETHICS",
       bottom: "PROGRAM",
@@ -92,6 +105,11 @@ export const PROGRAMS: Program[] = [
   {
     slug: "literacy-essentials",
     name: "AI Literacy Essentials Program",
+    logo: {
+      src: "/brand/programs/literacy-essentials.png",
+      width: 1254,
+      height: 1254,
+    },
     emblem: {
       top: "AI LITERACY",
       bottom: "ESSENTIALS PROGRAM",
@@ -123,6 +141,11 @@ export const PROGRAMS: Program[] = [
   {
     slug: "college-pathways",
     name: "AI College Pathways Program",
+    logo: {
+      src: "/brand/programs/college-pathways.png",
+      width: 1254,
+      height: 1254,
+    },
     emblem: {
       top: "AI COLLEGE",
       bottom: "PATHWAYS PROGRAM",
