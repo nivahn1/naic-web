@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import * as z from "zod";
@@ -7,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 import { PROGRAMS } from "../programs";
+import { COUNTRIES } from "@/lib/countries";
 
 export type RegistrationResult = {
   error?: string;
@@ -14,6 +16,7 @@ export type RegistrationResult = {
 };
 
 const PROGRAM_SLUGS = PROGRAMS.map((p) => p.slug) as [string, ...string[]];
+const COUNTRY_CODES = COUNTRIES.map((c) => c.code) as [string, ...string[]];
 const REGISTRATION_PRICE_CENTS = 99900;
 
 const optionalText = (max: number) =>
@@ -25,7 +28,9 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null));
 
 const RegistrationSchema = z.object({
-  program_slug: z.enum(PROGRAM_SLUGS, { error: "Choose a program." }),
+  program_slugs: z
+    .array(z.enum(PROGRAM_SLUGS))
+    .min(1, { error: "Choose at least one program." }),
   full_name: z
     .string()
     .trim()
@@ -53,6 +58,7 @@ const RegistrationSchema = z.object({
     .trim()
     .min(1, { error: "Enter your ZIP or postal code." })
     .max(20, { error: "That's too long." }),
+  billing_country: z.enum(COUNTRY_CODES, { error: "Choose a country." }),
 });
 
 async function siteOrigin() {
@@ -79,7 +85,7 @@ export async function submitRegistration(
   if (formData.get("website")) return {};
 
   const parsed = RegistrationSchema.safeParse({
-    program_slug: formData.get("program_slug"),
+    program_slugs: formData.getAll("program_slugs"),
     full_name: formData.get("full_name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
@@ -87,74 +93,93 @@ export async function submitRegistration(
     billing_city: formData.get("billing_city"),
     billing_state: formData.get("billing_state"),
     billing_zip: formData.get("billing_zip"),
+    billing_country: formData.get("billing_country"),
   });
 
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const program = PROGRAMS.find((p) => p.slug === parsed.data.program_slug);
-  if (!program) {
-    return { fieldErrors: { program_slug: ["Choose a program."] } };
-  }
+  const programs = parsed.data.program_slugs.map(
+    (slug) => PROGRAMS.find((p) => p.slug === slug)!,
+  );
+  const totalCents = programs.length * REGISTRATION_PRICE_CENTS;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: registration, error } = await supabase
-    .from("program_registrations")
-    .insert({
-      program_slug: program.slug,
-      program_name: program.name,
-      full_name: parsed.data.full_name,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      billing_street: parsed.data.billing_street,
-      billing_city: parsed.data.billing_city,
-      billing_state: parsed.data.billing_state,
-      billing_zip: parsed.data.billing_zip,
-      amount_cents: REGISTRATION_PRICE_CENTS,
-      submitted_by: user?.id ?? null,
-    })
-    .select("id")
-    .single();
+  // Generated up front rather than read back after insert: the table has
+  // no SELECT policy for anon/authenticated (write-only by design), so
+  // `.insert().select()` would fail to return the row even though the
+  // insert itself succeeded.
+  const registrationId = randomUUID();
 
-  if (error || !registration) {
+  const { error } = await supabase.from("program_registrations").insert({
+    id: registrationId,
+    program_slugs: programs.map((p) => p.slug),
+    program_names: programs.map((p) => p.name),
+    full_name: parsed.data.full_name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    billing_street: parsed.data.billing_street,
+    billing_city: parsed.data.billing_city,
+    billing_state: parsed.data.billing_state,
+    billing_zip: parsed.data.billing_zip,
+    billing_country: parsed.data.billing_country,
+    amount_cents: totalCents,
+    submitted_by: user?.id ?? null,
+  });
+
+  if (error) {
     return { error: "That didn’t go through. Please try again in a moment." };
   }
 
   if (!isStripeConfigured || !stripe) {
     // No payment processor connected yet — the registration is recorded as
     // pending and we stop here rather than pretending to take payment.
-    redirect(`/programs/register/success?registration_id=${registration.id}`);
+    redirect(`/programs/register/success?registration_id=${registrationId}`);
   }
 
   const origin = await siteOrigin();
 
+  // Create the customer with the billing address from our form so Stripe's
+  // AVS check runs against the same address we collected, instead of a
+  // second, disconnected address entered on Stripe's own page.
+  const customer = await stripe.customers.create({
+    email: parsed.data.email,
+    name: parsed.data.full_name,
+    phone: parsed.data.phone ?? undefined,
+    address: {
+      line1: parsed.data.billing_street,
+      city: parsed.data.billing_city,
+      state: parsed.data.billing_state,
+      postal_code: parsed.data.billing_zip,
+      country: parsed.data.billing_country,
+    },
+  });
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    customer_email: parsed.data.email,
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: REGISTRATION_PRICE_CENTS,
-          product_data: {
-            name: `${program.name} — Registration`,
-            description: "National AI Consortium program registration",
-          },
+    customer: customer.id,
+    line_items: programs.map((p) => ({
+      price_data: {
+        currency: "usd",
+        unit_amount: REGISTRATION_PRICE_CENTS,
+        product_data: {
+          name: `${p.name} — Registration`,
+          description: "National AI Consortium program registration",
         },
-        quantity: 1,
       },
-    ],
+      quantity: 1,
+    })),
     billing_address_collection: "auto",
-    success_url: `${origin}/programs/register/success?registration_id=${registration.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/programs/register?program=${program.slug}&cancelled=1`,
+    success_url: `${origin}/programs/register/success?registration_id=${registrationId}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/programs/register?program=${programs[0].slug}&cancelled=1`,
     metadata: {
-      registration_id: registration.id,
-      program_slug: program.slug,
+      registration_id: registrationId,
+      program_slugs: programs.map((p) => p.slug).join(","),
     },
   });
 

@@ -11,10 +11,11 @@ export const metadata: Metadata = {
 
 type Registration = {
   id: string;
-  program_name: string;
+  program_names: string[];
   full_name: string;
   email: string;
   status: string;
+  amount_cents: number;
 };
 
 async function confirmPayment(registrationId: string, sessionId: string) {
@@ -71,7 +72,7 @@ export default async function RegistrationSuccessPage({
     const admin = createAdminClient();
     const { data } = await admin
       .from("program_registrations")
-      .select("id, program_name, full_name, email, status")
+      .select("id, program_names, full_name, email, status, amount_cents")
       .eq("id", registration_id)
       .maybeSingle();
     registration = data;
@@ -96,14 +97,17 @@ export default async function RegistrationSuccessPage({
           {registration ? (
             <>
               <p className="font-display text-lg font-semibold text-white">
-                {registration.program_name}
+                {registration.program_names.join(", ")}
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                 {paid ? (
                   <>
-                    Thanks, {registration.full_name.split(" ")[0]} — your
-                    $999 payment went through and your seat is confirmed. A
-                    receipt is on its way to {registration.email}.
+                    Thanks, {registration.full_name.split(" ")[0]} — your $
+                    {(registration.amount_cents / 100).toLocaleString()}{" "}
+                    payment went through and your seat
+                    {registration.program_names.length === 1 ? "" : "s"} are
+                    confirmed. A receipt is on its way to{" "}
+                    {registration.email}.
                   </>
                 ) : confirmError ? (
                   <>
@@ -117,7 +121,9 @@ export default async function RegistrationSuccessPage({
                     Thanks, {registration.full_name.split(" ")[0]} — your
                     registration is recorded. Payment isn&rsquo;t connected
                     yet, so we&rsquo;ll follow up at {registration.email} to
-                    collect the $999 securely.
+                    collect the $
+                    {(registration.amount_cents / 100).toLocaleString()}{" "}
+                    securely.
                   </>
                 )}
               </p>

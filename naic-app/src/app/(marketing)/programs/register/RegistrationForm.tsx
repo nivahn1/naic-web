@@ -1,9 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRegistration, type RegistrationResult } from "./actions";
 import { PROGRAMS } from "../programs";
+import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
+
+const REGISTRATION_PRICE = 999;
 
 const INPUT =
   "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70";
@@ -51,15 +54,17 @@ function Field({
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ total }: { total: number }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || total === 0}
       className="rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
     >
-      {pending ? "Redirecting to payment…" : "Continue to payment — $999"}
+      {pending
+        ? "Redirecting to payment…"
+        : `Continue to payment — $${total.toLocaleString()}`}
     </button>
   );
 }
@@ -73,8 +78,16 @@ export function RegistrationForm({
     submitRegistration,
     {},
   );
+  const [selected, setSelected] = useState<string[]>([defaultProgramSlug]);
 
   const fieldErrors = state.fieldErrors ?? {};
+  const total = selected.length * REGISTRATION_PRICE;
+
+  const toggle = (slug: string) => {
+    setSelected((cur) =>
+      cur.includes(slug) ? cur.filter((s) => s !== slug) : [...cur, slug],
+    );
+  };
 
   return (
     <form
@@ -89,39 +102,42 @@ export function RegistrationForm({
 
       <fieldset>
         <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
-          Program
+          Programs
         </legend>
-        <div className="mt-5">
-          <label
-            htmlFor="program_slug"
-            className="mb-1.5 block text-sm font-medium text-slate-200"
-          >
-            Which program are you registering for?
-          </label>
-          <select
-            id="program_slug"
-            name="program_slug"
-            required
-            defaultValue={defaultProgramSlug}
-            className={INPUT}
-          >
-            {PROGRAMS.map((p) => (
-              <option key={p.slug} value={p.slug}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.program_slug?.[0] ? (
-            <p className="mt-1.5 text-xs text-rose-500">
-              {fieldErrors.program_slug[0]}
-            </p>
-          ) : null}
-          <p className="mt-2 text-sm text-[var(--muted)]">
-            Registration is{" "}
-            <span className="font-semibold text-white">$999</span> per
-            program.
-          </p>
+        <p className="mt-2 text-sm text-[var(--muted)]">
+          Select one or more — $999 each. You&rsquo;ll pay for all of them
+          in a single checkout.
+        </p>
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          {PROGRAMS.map((p) => (
+            <label
+              key={p.slug}
+              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50"
+            >
+              <input
+                type="checkbox"
+                name="program_slugs"
+                value={p.slug}
+                checked={selected.includes(p.slug)}
+                onChange={() => toggle(p.slug)}
+                className="h-4 w-4 shrink-0 accent-violet-600"
+              />
+              {p.name}
+            </label>
+          ))}
         </div>
+        {fieldErrors.program_slugs?.[0] ? (
+          <p className="mt-1.5 text-xs text-rose-500">
+            {fieldErrors.program_slugs[0]}
+          </p>
+        ) : null}
+        <p className="mt-4 text-sm text-[var(--muted)]">
+          Total:{" "}
+          <span className="font-semibold text-white">
+            ${total.toLocaleString()}
+          </span>{" "}
+          for {selected.length} program{selected.length === 1 ? "" : "s"}
+        </p>
       </fieldset>
 
       <fieldset className="mt-10">
@@ -189,6 +205,33 @@ export function RegistrationForm({
             autoComplete="postal-code"
             errors={fieldErrors.billing_zip}
           />
+          <div>
+            <label
+              htmlFor="billing_country"
+              className="mb-1.5 block text-sm font-medium text-slate-200"
+            >
+              Country
+            </label>
+            <select
+              id="billing_country"
+              name="billing_country"
+              required
+              autoComplete="country"
+              defaultValue={DEFAULT_COUNTRY}
+              className={INPUT}
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.billing_country?.[0] ? (
+              <p className="mt-1.5 text-xs text-rose-500">
+                {fieldErrors.billing_country[0]}
+              </p>
+            ) : null}
+          </div>
         </div>
       </fieldset>
 
@@ -204,7 +247,7 @@ export function RegistrationForm({
       </div>
 
       <div className="mt-8">
-        <SubmitButton />
+        <SubmitButton total={total} />
       </div>
     </form>
   );

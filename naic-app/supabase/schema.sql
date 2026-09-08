@@ -183,8 +183,8 @@ create policy "Anyone may upload an advisory application file"
 -- authenticated insert policy below intentionally grants no update access).
 create table if not exists public.program_registrations (
   id                          uuid primary key default gen_random_uuid(),
-  program_slug                text not null,
-  program_name                text not null,
+  program_slugs               text[] not null check (array_length(program_slugs, 1) between 1 and 20),
+  program_names               text[] not null,
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -192,7 +192,8 @@ create table if not exists public.program_registrations (
   billing_city                text not null check (char_length(billing_city) <= 120),
   billing_state               text not null check (char_length(billing_state) <= 80),
   billing_zip                 text not null check (char_length(billing_zip) <= 20),
-  amount_cents                integer not null default 99900,
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
   status                      text not null default 'pending'
                               check (status in ('pending', 'paid', 'cancelled')),
   stripe_checkout_session_id  text unique,
