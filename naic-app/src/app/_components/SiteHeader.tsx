@@ -19,6 +19,7 @@ const NAV: {
       { href: "/about/advisory-board", label: "Advisory Board" },
     ],
   },
+  { href: "/certification", label: "Certification" },
   { href: "/programs", label: "Programs" },
   { href: "/training", label: "Training" },
   { href: "/events", label: "Events" },

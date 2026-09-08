@@ -72,7 +72,7 @@ export default function ProgramsPage() {
           links={[
             { label: "Training", href: "/training" },
             { label: "Services", href: "/services" },
-            { label: "Certification", href: "/#certification" },
+            { label: "Certification", href: "/certification" },
           ]}
         />
       </Section>

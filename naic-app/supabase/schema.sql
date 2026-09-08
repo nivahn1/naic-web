@@ -215,3 +215,41 @@ create policy "Anyone may submit a program registration"
 
 create index if not exists program_registrations_created_at_idx
   on public.program_registrations (created_at desc);
+
+-- 9. Certification registrations ---------------------------------------------
+
+-- Same shape and write-only policy as program_registrations, but each
+-- certification tier has its own price (AI-CP, AI-SCP, AI-EP differ), so
+-- price_cents is stored per selected item alongside the totals.
+create table if not exists public.certification_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  certification_slugs         text[] not null check (array_length(certification_slugs, 1) between 1 and 20),
+  certification_names         text[] not null,
+  price_cents                 integer[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.certification_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a certification registration" on public.certification_registrations;
+create policy "Anyone may submit a certification registration"
+  on public.certification_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists certification_registrations_created_at_idx
+  on public.certification_registrations (created_at desc);

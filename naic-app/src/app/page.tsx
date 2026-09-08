@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter } from "./_components/SiteFooter";
 import Image from "next/image";
+import Link from "next/link";
 import { Constellation } from "./_components/Constellation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -59,16 +60,22 @@ const CERTS = [
     code: "AI‑CP",
     name: "AI Certified Professional",
     body: "For individuals demonstrating proficiency in applying AI concepts and technologies effectively in real-world scenarios — machine learning, data analysis, and AI ethics.",
+    slug: "ai-certified-professional",
+    logoSrc: "/brand/certification/ai-certified-professional.png",
   },
   {
-    code: "AI‑SP",
-    name: "AI Senior Professional",
+    code: "AI‑SCP",
+    name: "AI Senior Certified Professional",
     body: "For experienced practitioners elevating their expertise — complex ML algorithms, AI system design, and strategic implementation of impactful AI projects.",
+    slug: "ai-senior-certified-professional",
+    logoSrc: "/brand/certification/ai-senior-certified-professional.png",
   },
   {
     code: "AI‑EP",
     name: "AI Executive Professional",
     body: "For senior leaders and executives mastering AI’s impact on business strategy, organizational change, and innovation at the highest levels.",
+    slug: "ai-executive-professional",
+    logoSrc: "/brand/certification/ai-executive-professional.png",
   },
 ];
 
@@ -318,27 +325,35 @@ export default async function Home() {
                 in AI for Cloud &amp; Infrastructure, Responsible AI Governance, and
                 AI in Business Strategy.
               </p>
-              <a
-                href="#membership"
+              <Link
+                href="/certification"
                 className="mt-8 inline-flex rounded-2xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition-transform hover:-translate-y-0.5"
               >
-                Start your certification path
-              </a>
+                Start your certification journey
+              </Link>
             </div>
             <div className="reveal space-y-4">
               {CERTS.map((c) => (
-                <div
+                <Link
                   key={c.code}
+                  href={`/certification/${c.slug}`}
                   className="flex gap-5 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] p-6 transition-colors hover:border-violet-400/50"
                 >
-                  <div className="flex h-11 shrink-0 items-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-500 px-3.5 font-display text-sm font-semibold text-white">
-                    {c.code}
-                  </div>
+                  <Image
+                    src={c.logoSrc}
+                    alt={c.name}
+                    width={120}
+                    height={120}
+                    className="h-16 w-16 shrink-0 object-contain"
+                  />
                   <div>
                     <h3 className="font-display font-semibold text-white dark:text-white">{c.name}</h3>
                     <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">{c.body}</p>
+                    <span className="font-display mt-2 inline-block text-sm font-semibold text-violet-300">
+                      Learn More →
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
