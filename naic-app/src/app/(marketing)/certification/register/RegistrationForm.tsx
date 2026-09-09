@@ -3,10 +3,8 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRegistration, type RegistrationResult } from "./actions";
-import { PROGRAMS } from "../programs";
+import { CERTIFICATIONS } from "../certification";
 import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
-
-const REGISTRATION_PRICE = 999;
 
 const INPUT =
   "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70";
@@ -70,18 +68,21 @@ function SubmitButton({ total }: { total: number }) {
 }
 
 export function RegistrationForm({
-  defaultProgramSlug,
+  defaultCertificationSlug,
 }: {
-  defaultProgramSlug: string;
+  defaultCertificationSlug: string;
 }) {
   const [state, formAction] = useActionState<RegistrationResult, FormData>(
     submitRegistration,
     {},
   );
-  const [selected, setSelected] = useState<string[]>([defaultProgramSlug]);
+  const [selected, setSelected] = useState<string[]>([defaultCertificationSlug]);
 
   const fieldErrors = state.fieldErrors ?? {};
-  const total = selected.length * REGISTRATION_PRICE;
+  const total = CERTIFICATIONS.filter((c) => selected.includes(c.slug)).reduce(
+    (sum, c) => sum + c.priceCents,
+    0,
+  ) / 100;
 
   const toggle = (slug: string) => {
     setSelected((cur) =>
@@ -102,33 +103,41 @@ export function RegistrationForm({
 
       <fieldset>
         <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
-          Programs
+          Certifications
         </legend>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Select one or more — $999 each. You&rsquo;ll pay for all of them
-          in a single checkout.
+          Select one or more. You&rsquo;ll pay for all of them in a single
+          checkout.
         </p>
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {PROGRAMS.map((p) => (
+          {CERTIFICATIONS.map((c) => (
             <label
-              key={p.slug}
+              key={c.slug}
               className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50"
             >
               <input
                 type="checkbox"
-                name="program_slugs"
-                value={p.slug}
-                checked={selected.includes(p.slug)}
-                onChange={() => toggle(p.slug)}
+                name="certification_slugs"
+                value={c.slug}
+                checked={selected.includes(c.slug)}
+                onChange={() => toggle(c.slug)}
                 className="h-4 w-4 shrink-0 accent-violet-600"
               />
-              {p.name}
+              <span className="flex-1">
+                {c.name}
+                <span className="ml-1.5 text-xs text-[var(--muted)]">
+                  ({c.code})
+                </span>
+              </span>
+              <span className="font-display shrink-0 font-semibold text-white">
+                ${(c.priceCents / 100).toLocaleString()}
+              </span>
             </label>
           ))}
         </div>
-        {fieldErrors.program_slugs?.[0] ? (
+        {fieldErrors.certification_slugs?.[0] ? (
           <p className="mt-1.5 text-xs text-rose-500">
-            {fieldErrors.program_slugs[0]}
+            {fieldErrors.certification_slugs[0]}
           </p>
         ) : null}
         <p className="mt-4 text-sm text-[var(--muted)]">
@@ -136,7 +145,7 @@ export function RegistrationForm({
           <span className="font-semibold text-white">
             ${total.toLocaleString()}
           </span>{" "}
-          for {selected.length} program{selected.length === 1 ? "" : "s"}
+          for {selected.length} certification{selected.length === 1 ? "" : "s"}
         </p>
       </fieldset>
 

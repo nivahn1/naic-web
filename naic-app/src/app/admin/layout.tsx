@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 async function pendingCounts() {
   const supabase = await createClient();
 
-  const [nominations, advisory, registrations] = await Promise.all([
+  const [nominations, advisory, registrations, certifications] = await Promise.all([
     supabase
       .from("nominations")
       .select("id", { count: "exact", head: true })
@@ -30,12 +30,17 @@ async function pendingCounts() {
       .from("program_registrations")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase
+      .from("certification_registrations")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ]);
 
   return {
     "/admin/nominations": nominations.count ?? 0,
     "/admin/advisory": advisory.count ?? 0,
     "/admin/registrations": registrations.count ?? 0,
+    "/admin/certifications": certifications.count ?? 0,
   };
 }
 

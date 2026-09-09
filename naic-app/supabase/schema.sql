@@ -183,8 +183,8 @@ create policy "Anyone may upload an advisory application file"
 -- authenticated insert policy below intentionally grants no update access).
 create table if not exists public.program_registrations (
   id                          uuid primary key default gen_random_uuid(),
-  program_slug                text not null,
-  program_name                text not null,
+  program_slugs               text[] not null check (array_length(program_slugs, 1) between 1 and 20),
+  program_names               text[] not null,
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -192,7 +192,8 @@ create table if not exists public.program_registrations (
   billing_city                text not null check (char_length(billing_city) <= 120),
   billing_state               text not null check (char_length(billing_state) <= 80),
   billing_zip                 text not null check (char_length(billing_zip) <= 20),
-  amount_cents                integer not null default 99900,
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
   status                      text not null default 'pending'
                               check (status in ('pending', 'paid', 'cancelled')),
   stripe_checkout_session_id  text unique,
@@ -215,7 +216,45 @@ create policy "Anyone may submit a program registration"
 create index if not exists program_registrations_created_at_idx
   on public.program_registrations (created_at desc);
 
--- 9. Admin role ---------------------------------------------------------------
+-- 9. Certification registrations ---------------------------------------------
+
+-- Same shape and write-only policy as program_registrations, but each
+-- certification tier has its own price (AI-CP, AI-SCP, AI-EP differ), so
+-- price_cents is stored per selected item alongside the totals.
+create table if not exists public.certification_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  certification_slugs         text[] not null check (array_length(certification_slugs, 1) between 1 and 20),
+  certification_names         text[] not null,
+  price_cents                 integer[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.certification_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a certification registration" on public.certification_registrations;
+create policy "Anyone may submit a certification registration"
+  on public.certification_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists certification_registrations_created_at_idx
+  on public.certification_registrations (created_at desc);
+
+-- 10. Admin role --------------------------------------------------------------
 
 -- Admins are ordinary members with `role = 'admin'`. There is no separate
 -- admin table and no service-role dependency for reads: every admin-only
@@ -294,7 +333,7 @@ from auth.users u
 where u.id = p.id
   and p.email is distinct from u.email;
 
--- 10. Review status on the two submission tables ------------------------------
+-- 11. Review status on the two submission tables ------------------------------
 
 alter table public.nominations
   add column if not exists review_status text not null default 'new'
@@ -304,7 +343,7 @@ alter table public.advisory_applications
   add column if not exists review_status text not null default 'new'
   check (review_status in ('new', 'reviewed', 'approved', 'archived'));
 
--- 11. Admin policies ----------------------------------------------------------
+-- 12. Admin policies ---------------------------------------------------------
 
 -- Permissive policies OR together, so these sit alongside the owner-only and
 -- insert-only policies above rather than replacing them.
@@ -384,6 +423,25 @@ create policy "Admins may delete program registrations"
 
 -- Admins can read (and clean up) the private advisory bio/headshot files, so
 -- the dashboard can hand out short-lived signed download links.
+drop policy if exists "Admins may view certification registrations" on public.certification_registrations;
+create policy "Admins may view certification registrations"
+  on public.certification_registrations for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update certification registrations" on public.certification_registrations;
+create policy "Admins may update certification registrations"
+  on public.certification_registrations for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins may delete certification registrations" on public.certification_registrations;
+create policy "Admins may delete certification registrations"
+  on public.certification_registrations for delete
+  to authenticated
+  using (public.is_admin());
+
 drop policy if exists "Admins may read advisory application files" on storage.objects;
 create policy "Admins may read advisory application files"
   on storage.objects for select
@@ -396,7 +454,7 @@ create policy "Admins may delete advisory application files"
   to authenticated
   using (bucket_id = 'advisory-applications' and public.is_admin());
 
--- 12. Promote your first admin ------------------------------------------------
+-- 13. Promote your first admin -----------------------------------------------
 
 -- Nobody is an admin until you say so. Sign up through the site first, then
 -- uncomment this line with your own address and run it once. After that you
@@ -404,7 +462,7 @@ create policy "Admins may delete advisory application files"
 --
 -- update public.profiles set role = 'admin' where email = 'you@example.com';
 
--- 13. Column-level write hardening -------------------------------------------
+-- 14. Column-level write hardening --------------------------------------------
 
 -- RLS alone does NOT secure the role column. The owner-update policy in
 -- section 2 lets a member update their own row, and an RLS policy cannot
@@ -420,7 +478,7 @@ create policy "Admins may delete advisory application files"
 revoke update on public.profiles from anon, authenticated;
 grant update (full_name, membership_tier) on public.profiles to authenticated;
 
--- 14. Guarded role changes ----------------------------------------------------
+-- 15. Guarded role changes ----------------------------------------------------
 
 -- Because of the grant above, even an admin cannot write `role` directly.
 -- Role changes go through this function instead: it runs as its definer (so

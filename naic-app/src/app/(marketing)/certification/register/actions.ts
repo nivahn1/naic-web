@@ -7,7 +7,7 @@ import * as z from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
-import { PROGRAMS } from "../programs";
+import { CERTIFICATIONS } from "../certification";
 import { COUNTRIES } from "@/lib/countries";
 
 export type RegistrationResult = {
@@ -15,9 +15,8 @@ export type RegistrationResult = {
   fieldErrors?: Record<string, string[]>;
 };
 
-const PROGRAM_SLUGS = PROGRAMS.map((p) => p.slug) as [string, ...string[]];
+const CERT_SLUGS = CERTIFICATIONS.map((c) => c.slug) as [string, ...string[]];
 const COUNTRY_CODES = COUNTRIES.map((c) => c.code) as [string, ...string[]];
-const REGISTRATION_PRICE_CENTS = 99900;
 
 const optionalText = (max: number) =>
   z
@@ -28,9 +27,9 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null));
 
 const RegistrationSchema = z.object({
-  program_slugs: z
-    .array(z.enum(PROGRAM_SLUGS))
-    .min(1, { error: "Choose at least one program." }),
+  certification_slugs: z
+    .array(z.enum(CERT_SLUGS))
+    .min(1, { error: "Choose at least one certification." }),
   full_name: z
     .string()
     .trim()
@@ -85,7 +84,7 @@ export async function submitRegistration(
   if (formData.get("website")) return {};
 
   const parsed = RegistrationSchema.safeParse({
-    program_slugs: formData.getAll("program_slugs"),
+    certification_slugs: formData.getAll("certification_slugs"),
     full_name: formData.get("full_name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
@@ -100,10 +99,10 @@ export async function submitRegistration(
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const programs = parsed.data.program_slugs.map(
-    (slug) => PROGRAMS.find((p) => p.slug === slug)!,
+  const certifications = parsed.data.certification_slugs.map(
+    (slug) => CERTIFICATIONS.find((c) => c.slug === slug)!,
   );
-  const totalCents = programs.length * REGISTRATION_PRICE_CENTS;
+  const totalCents = certifications.reduce((sum, c) => sum + c.priceCents, 0);
 
   const supabase = await createClient();
   const {
@@ -116,10 +115,11 @@ export async function submitRegistration(
   // insert itself succeeded.
   const registrationId = randomUUID();
 
-  const { error } = await supabase.from("program_registrations").insert({
+  const { error } = await supabase.from("certification_registrations").insert({
     id: registrationId,
-    program_slugs: programs.map((p) => p.slug),
-    program_names: programs.map((p) => p.name),
+    certification_slugs: certifications.map((c) => c.slug),
+    certification_names: certifications.map((c) => c.name),
+    price_cents: certifications.map((c) => c.priceCents),
     full_name: parsed.data.full_name,
     email: parsed.data.email,
     phone: parsed.data.phone,
@@ -139,7 +139,7 @@ export async function submitRegistration(
   if (!isStripeConfigured || !stripe) {
     // No payment processor connected yet — the registration is recorded as
     // pending and we stop here rather than pretending to take payment.
-    redirect(`/programs/register/success?registration_id=${registrationId}`);
+    redirect(`/certification/register/success?registration_id=${registrationId}`);
   }
 
   const origin = await siteOrigin();
@@ -163,23 +163,23 @@ export async function submitRegistration(
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: customer.id,
-    line_items: programs.map((p) => ({
+    line_items: certifications.map((c) => ({
       price_data: {
         currency: "usd",
-        unit_amount: REGISTRATION_PRICE_CENTS,
+        unit_amount: c.priceCents,
         product_data: {
-          name: `${p.name} — Registration`,
-          description: "National AI Consortium program registration",
+          name: `${c.name} (${c.code}) — Registration`,
+          description: "National AI Certification Institute™ registration",
         },
       },
       quantity: 1,
     })),
     billing_address_collection: "auto",
-    success_url: `${origin}/programs/register/success?registration_id=${registrationId}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/programs/register?program=${programs[0].slug}&cancelled=1`,
+    success_url: `${origin}/certification/register/success?registration_id=${registrationId}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/certification/register?certification=${certifications[0].slug}&cancelled=1`,
     metadata: {
       registration_id: registrationId,
-      program_slugs: programs.map((p) => p.slug).join(","),
+      certification_slugs: certifications.map((c) => c.slug).join(","),
     },
   });
 

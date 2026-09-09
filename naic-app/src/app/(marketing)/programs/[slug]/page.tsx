@@ -166,7 +166,7 @@ export default async function ProgramPage({
           links={[
             { label: "All programs", href: "/programs" },
             { label: "Training", href: "/training" },
-            { label: "Certification", href: "/#certification" },
+            { label: "Certification", href: "/certification" },
           ]}
         />
       </Section>

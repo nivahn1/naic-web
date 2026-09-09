@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 type Registration = {
   id: string;
-  program_names: string[];
+  certification_names: string[];
   full_name: string;
   email: string;
   status: string;
@@ -37,7 +37,7 @@ async function confirmPayment(registrationId: string, sessionId: string) {
 
   const admin = createAdminClient();
   await admin
-    .from("program_registrations")
+    .from("certification_registrations")
     .update({
       status: "paid",
       stripe_checkout_session_id: session.id,
@@ -71,8 +71,8 @@ export default async function RegistrationSuccessPage({
   if (registration_id && isSupabaseAdminConfigured) {
     const admin = createAdminClient();
     const { data } = await admin
-      .from("program_registrations")
-      .select("id, program_names, full_name, email, status, amount_cents")
+      .from("certification_registrations")
+      .select("id, certification_names, full_name, email, status, amount_cents")
       .eq("id", registration_id)
       .maybeSingle();
     registration = data;
@@ -82,7 +82,7 @@ export default async function RegistrationSuccessPage({
     <>
       <PageHeader
         center
-        eyebrow="Programs"
+        eyebrow="Certification"
         title={
           paid
             ? "Payment received"
@@ -97,7 +97,7 @@ export default async function RegistrationSuccessPage({
           {registration ? (
             <>
               <p className="font-display text-lg font-semibold text-white">
-                {registration.program_names.join(", ")}
+                {registration.certification_names.join(", ")}
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                 {paid ? (
@@ -105,8 +105,8 @@ export default async function RegistrationSuccessPage({
                     Thanks, {registration.full_name.split(" ")[0]} — your $
                     {(registration.amount_cents / 100).toLocaleString()}{" "}
                     payment went through and your seat
-                    {registration.program_names.length === 1 ? "" : "s"} are
-                    confirmed. A receipt is on its way to{" "}
+                    {registration.certification_names.length === 1 ? "" : "s"}{" "}
+                    are confirmed. A receipt is on its way to{" "}
                     {registration.email}.
                   </>
                 ) : confirmError ? (
@@ -137,10 +137,10 @@ export default async function RegistrationSuccessPage({
           )}
 
           <Link
-            href="/programs"
+            href="/certification"
             className="mt-6 inline-flex rounded-xl bg-gradient-to-br from-[#00004d] to-violet-600 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
           >
-            Back to programs
+            Back to certifications
           </Link>
         </div>
       </Section>

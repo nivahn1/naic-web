@@ -173,7 +173,7 @@ export default async function TrainingDetailPage({
           links={[
             { label: "Programs", href: "/programs" },
             { label: "Services", href: "/services" },
-            { label: "Certification", href: "/#certification" },
+            { label: "Certification", href: "/certification" },
           ]}
         />
       </Section>

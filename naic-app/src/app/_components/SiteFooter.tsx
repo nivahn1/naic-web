@@ -8,7 +8,7 @@ const EXPLORE: [string, string][] = [
   ["Programs", "/programs"],
   ["Training", "/training"],
   ["Services", "/services"],
-  ["Certification", "/#certification"],
+  ["Certification", "/certification"],
 ];
 
 const CONVENE: [string, string][] = [

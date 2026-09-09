@@ -46,6 +46,11 @@ const ICONS = {
     "M10 2.5 3 5.5v4.2c0 4 2.9 6.9 7 7.8 4.1-.9 7-3.8 7-7.8V5.5z",
     "M7.4 9.9 9.3 11.8 12.9 8.2",
   ],
+  certifications: [
+    "M10 2.5 3.5 5.4v3.9c0 3.6 2.7 6.4 6.5 7.2 3.8-.8 6.5-3.6 6.5-7.2V5.4z",
+    "M10 7.2a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z",
+    "M8.4 10.6 7.8 14l2.2-1.2 2.2 1.2-.6-3.4",
+  ],
   site: [
     "M10 17.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z",
     "M2.6 10h14.8",
@@ -65,6 +70,11 @@ const MAIN: Item[] = [
     href: "/admin/registrations",
     label: "Registrations",
     icon: <Icon d={[...ICONS.registrations]} />,
+  },
+  {
+    href: "/admin/certifications",
+    label: "Certifications",
+    icon: <Icon d={[...ICONS.certifications]} />,
   },
 ];
 

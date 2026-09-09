@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { deleteRegistration, setRegistrationStatus } from "../actions";
+import {
+  deleteCertificationRegistration,
+  setCertificationStatus,
+} from "../actions";
 import { RowMenu } from "../_components/RowMenu";
 import {
   Card,
@@ -20,7 +23,7 @@ import {
 } from "../_components/ui";
 import { orIlike, pickFilter, sanitizeQuery, type AdminSearchParams } from "../query";
 
-export const metadata: Metadata = { title: "Registrations" };
+export const metadata: Metadata = { title: "Certifications" };
 
 const STATUSES = ["pending", "paid", "cancelled"] as const;
 type Status = (typeof STATUSES)[number];
@@ -31,11 +34,12 @@ const TONE: Record<Status, PillTone> = {
   cancelled: "rose",
 };
 
-type Registration = {
+type CertificationRegistration = {
   id: string;
-  /** One registration can cover several programs; these arrays run in step. */
-  program_names: string[];
-  program_slugs: string[];
+  /** These three arrays run in step: slug, display name, and per-item price. */
+  certification_slugs: string[];
+  certification_names: string[];
+  price_cents: number[];
   full_name: string;
   email: string;
   phone: string | null;
@@ -50,7 +54,7 @@ type Registration = {
   created_at: string;
 };
 
-export default async function RegistrationsPage({
+export default async function CertificationsPage({
   searchParams,
 }: {
   searchParams: Promise<AdminSearchParams>;
@@ -62,25 +66,27 @@ export default async function RegistrationsPage({
   const supabase = await createClient();
 
   let query = supabase
-    .from("program_registrations")
+    .from("certification_registrations")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (filter) query = query.eq("status", filter);
   if (term) {
-    // program_names is a text[]; PostgREST has no case-insensitive match
+    // certification_names is a text[]; PostgREST has no case-insensitive match
     // into an array, so search covers the registrant only.
     query = query.or(orIlike(["full_name", "email"], term));
   }
 
   const [rowsRes, allRes] = await Promise.all([
     query.limit(500),
-    // Unfiltered, for the tile totals and the chip counts.
-    supabase.from("program_registrations").select("status, amount_cents"),
+    supabase.from("certification_registrations").select("status, amount_cents"),
   ]);
 
-  const rows = (rowsRes.data ?? []) as Registration[];
-  const all = (allRes.data ?? []) as Pick<Registration, "status" | "amount_cents">[];
+  const rows = (rowsRes.data ?? []) as CertificationRegistration[];
+  const all = (allRes.data ?? []) as Pick<
+    CertificationRegistration,
+    "status" | "amount_cents"
+  >[];
 
   const countBy = (s: Status) => all.filter((r) => r.status === s).length;
   const paidRevenue = all
@@ -90,9 +96,9 @@ export default async function RegistrationsPage({
   return (
     <div>
       <PageTitle
-        title="Registrations"
-        lead="Program registrations, including those that never finished paying."
-        action={<ExportButton table="registrations" />}
+        title="Certifications"
+        lead="Certification registrations, including those that never finished paying."
+        action={<ExportButton table="certifications" />}
       />
 
       <Flash notice={notice} error={error ?? rowsRes.error?.message} />
@@ -117,7 +123,7 @@ export default async function RegistrationsPage({
 
       <div className="mt-6">
         <FilterTabs
-          basePath="/admin/registrations"
+          basePath="/admin/certifications"
           current={filter}
           q={term || undefined}
           options={[
@@ -134,7 +140,7 @@ export default async function RegistrationsPage({
           <thead>
             <tr>
               <Th>Registrant</Th>
-              <Th>Program</Th>
+              <Th>Certifications</Th>
               <Th>Billing address</Th>
               <Th className="text-right">Amount</Th>
               <Th>Status</Th>
@@ -148,8 +154,8 @@ export default async function RegistrationsPage({
                 colSpan={7}
                 message={
                   term || filter
-                    ? "No registrations match that search."
-                    : "No registrations yet."
+                    ? "No certification registrations match that search."
+                    : "No certification registrations yet."
                 }
               />
             )}
@@ -163,25 +169,28 @@ export default async function RegistrationsPage({
                   )}
                 </Td>
                 <Td>
-                  {row.program_names.length > 0 ? (
+                  {row.certification_names.length > 0 ? (
                     <ul className="space-y-0.5">
-                      {row.program_names.map((programName, i) => (
-                        <li key={row.program_slugs[i] ?? programName} className="text-sm">
-                          {programName}
+                      {row.certification_names.map((certName, i) => (
+                        <li
+                          key={row.certification_slugs[i] ?? certName}
+                          className="flex gap-2 text-sm"
+                        >
+                          <span>{certName}</span>
+                          {typeof row.price_cents[i] === "number" && (
+                            <span className="text-xs text-[var(--muted)]">
+                              {formatMoney(row.price_cents[i])}
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>
                   ) : (
                     <p className="text-sm text-[var(--muted)]">—</p>
                   )}
-                  {row.program_names.length > 1 && (
-                    <p className="mt-0.5 text-xs text-[var(--muted)]">
-                      {row.program_names.length} programs
-                    </p>
-                  )}
                   {row.stripe_checkout_session_id && (
                     <p
-                      className="text-xs text-[var(--muted)]"
+                      className="mt-0.5 text-xs text-[var(--muted)]"
                       title={row.stripe_checkout_session_id}
                     >
                       Stripe {row.stripe_checkout_session_id.slice(-8)}
@@ -211,30 +220,30 @@ export default async function RegistrationsPage({
                 <Td className="text-right">
                   <RowMenu
                     id={row.id}
-                    redirectTo="/admin/registrations"
+                    redirectTo="/admin/certifications"
                     items={[
                       {
                         group: "Set status",
                         label: "Mark paid",
-                        action: setRegistrationStatus,
+                        action: setCertificationStatus,
                         fields: { status: "paid" },
                       },
                       {
                         group: "Set status",
                         label: "Mark pending",
-                        action: setRegistrationStatus,
+                        action: setCertificationStatus,
                         fields: { status: "pending" },
                       },
                       {
                         group: "Set status",
                         label: "Mark cancelled",
-                        action: setRegistrationStatus,
+                        action: setCertificationStatus,
                         fields: { status: "cancelled" },
                       },
                       {
                         group: "Danger zone",
                         label: "Delete registration",
-                        action: deleteRegistration,
+                        action: deleteCertificationRegistration,
                         danger: true,
                         confirmLabel: "Click again to delete",
                       },

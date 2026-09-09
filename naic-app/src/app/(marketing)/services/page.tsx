@@ -92,7 +92,7 @@ export default function ServicesPage() {
           links={[
             { label: "Programs", href: "/programs" },
             { label: "Training", href: "/training" },
-            { label: "Certification", href: "/#certification" },
+            { label: "Certification", href: "/certification" },
           ]}
         />
       </Section>
