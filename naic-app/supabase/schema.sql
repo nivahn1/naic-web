@@ -253,3 +253,67 @@ create policy "Anyone may submit a certification registration"
 
 create index if not exists certification_registrations_created_at_idx
   on public.certification_registrations (created_at desc);
+
+-- 10. Training registrations ---------------------------------------------------
+
+-- Same shape as program_registrations — flat $999 per training. Customized
+-- AI Training is intentionally excluded (see table 11): it's scoped through
+-- a consultation, not this checkout.
+create table if not exists public.training_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  training_slugs              text[] not null check (array_length(training_slugs, 1) between 1 and 20),
+  training_names              text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.training_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a training registration" on public.training_registrations;
+create policy "Anyone may submit a training registration"
+  on public.training_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists training_registrations_created_at_idx
+  on public.training_registrations (created_at desc);
+
+-- 11. Customized AI Training consultation requests -----------------------------
+
+-- No payment here — this is a "book a consultation" contact form. Write-only,
+-- same as the other public forms; read only via the dashboard or service role.
+create table if not exists public.customized_training_consultations (
+  id             uuid primary key default gen_random_uuid(),
+  full_name      text not null check (char_length(full_name) between 2 and 120),
+  email          text not null check (char_length(email) <= 254),
+  phone          text check (char_length(phone) <= 40),
+  company        text not null check (char_length(company) between 1 and 160),
+  format         text check (char_length(format) <= 80),
+  message        text not null check (char_length(message) between 20 and 4000),
+  submitted_by   uuid references auth.users (id) on delete set null,
+  created_at     timestamptz not null default now()
+);
+
+alter table public.customized_training_consultations enable row level security;
+
+drop policy if exists "Anyone may request a customized training consultation" on public.customized_training_consultations;
+create policy "Anyone may request a customized training consultation"
+  on public.customized_training_consultations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists customized_training_consultations_created_at_idx
+  on public.customized_training_consultations (created_at desc);

@@ -80,14 +80,13 @@ export default function TrainingPage() {
         />
 
         <CtaRow
-          text="Bring a program in-house, or enroll your team in an upcoming cohort."
+          text="Register for a training — $999 per track — or book a consultation for Customized AI Training."
           actions={[
+            { label: "Register — $999", href: "/training/register", primary: true },
             {
               label: "Talk to the training team",
-              href: "mailto:web@nationalaiconsortium.org?subject=AI%20training%20enquiry",
-              primary: true,
+              href: "/training/customized/consult",
             },
-            { label: "See programs", href: "/programs" },
           ]}
         />
         <RelatedLinks

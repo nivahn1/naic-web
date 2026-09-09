@@ -159,15 +159,33 @@ export default async function TrainingDetailPage({
 
       <Section>
         <CtaRow
-          text={`Bring ${training.name} in-house, or enroll your team in an upcoming cohort.`}
-          actions={[
-            {
-              label: "Talk to the training team",
-              href: "mailto:web@nationalaiconsortium.org?subject=AI%20training%20enquiry",
-              primary: true,
-            },
-            { label: "All training", href: "/training" },
-          ]}
+          text={
+            training.slug === "customized"
+              ? "Customized AI Training is scoped with you. Book a consultation to get started."
+              : `Register for ${training.name} — $999 per seat.`
+          }
+          actions={
+            training.slug === "customized"
+              ? [
+                  {
+                    label: "Book a consultation",
+                    href: "/training/customized/consult",
+                    primary: true,
+                  },
+                  { label: "All training", href: "/training" },
+                ]
+              : [
+                  {
+                    label: "Register — $999",
+                    href: `/training/register?training=${training.slug}`,
+                    primary: true,
+                  },
+                  {
+                    label: "Talk to the training team",
+                    href: "/training/customized/consult",
+                  },
+                ]
+          }
         />
         <RelatedLinks
           links={[
