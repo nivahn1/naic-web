@@ -84,6 +84,50 @@ export async function deleteRegistration(formData: FormData) {
   back(path, { notice: "Registration deleted." });
 }
 
+/* ------------------------------------------------ certification registrations */
+
+export async function setCertificationStatus(formData: FormData) {
+  const path = safePath(formData.get("redirect_to"), "/admin/certifications");
+  const { user } = await getAdmin();
+  if (!user) back(path, { error: "You’re not authorised to do that." });
+
+  const parsed = z
+    .object({ id: Id, status: z.enum(REGISTRATION_STATUSES) })
+    .safeParse({ id: formData.get("id"), status: formData.get("status") });
+  if (!parsed.success) back(path, { error: "That status isn’t valid." });
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("certification_registrations")
+    .update({ status: parsed.data.status })
+    .eq("id", parsed.data.id);
+
+  if (error) back(path, { error: error.message });
+
+  revalidatePath("/admin", "layout");
+  back(path, { notice: `Registration marked ${parsed.data.status}.` });
+}
+
+export async function deleteCertificationRegistration(formData: FormData) {
+  const path = safePath(formData.get("redirect_to"), "/admin/certifications");
+  const { user } = await getAdmin();
+  if (!user) back(path, { error: "You’re not authorised to do that." });
+
+  const parsed = Id.safeParse(formData.get("id"));
+  if (!parsed.success) back(path, { error: "Unknown registration." });
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("certification_registrations")
+    .delete()
+    .eq("id", parsed.data);
+
+  if (error) back(path, { error: error.message });
+
+  revalidatePath("/admin", "layout");
+  back(path, { notice: "Registration deleted." });
+}
+
 /* ------------------------------------------------------------------ members */
 
 export async function setMemberTier(formData: FormData) {

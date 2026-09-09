@@ -254,7 +254,7 @@ create policy "Anyone may submit a certification registration"
 create index if not exists certification_registrations_created_at_idx
   on public.certification_registrations (created_at desc);
 
--- 9. Admin role ---------------------------------------------------------------
+-- 10. Admin role --------------------------------------------------------------
 
 -- Admins are ordinary members with `role = 'admin'`. There is no separate
 -- admin table and no service-role dependency for reads: every admin-only
@@ -333,7 +333,7 @@ from auth.users u
 where u.id = p.id
   and p.email is distinct from u.email;
 
--- 10. Review status on the two submission tables ------------------------------
+-- 11. Review status on the two submission tables ------------------------------
 
 alter table public.nominations
   add column if not exists review_status text not null default 'new'
@@ -343,7 +343,7 @@ alter table public.advisory_applications
   add column if not exists review_status text not null default 'new'
   check (review_status in ('new', 'reviewed', 'approved', 'archived'));
 
--- 11. Admin policies ----------------------------------------------------------
+-- 12. Admin policies ---------------------------------------------------------
 
 -- Permissive policies OR together, so these sit alongside the owner-only and
 -- insert-only policies above rather than replacing them.
@@ -423,6 +423,25 @@ create policy "Admins may delete program registrations"
 
 -- Admins can read (and clean up) the private advisory bio/headshot files, so
 -- the dashboard can hand out short-lived signed download links.
+drop policy if exists "Admins may view certification registrations" on public.certification_registrations;
+create policy "Admins may view certification registrations"
+  on public.certification_registrations for select
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins may update certification registrations" on public.certification_registrations;
+create policy "Admins may update certification registrations"
+  on public.certification_registrations for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins may delete certification registrations" on public.certification_registrations;
+create policy "Admins may delete certification registrations"
+  on public.certification_registrations for delete
+  to authenticated
+  using (public.is_admin());
+
 drop policy if exists "Admins may read advisory application files" on storage.objects;
 create policy "Admins may read advisory application files"
   on storage.objects for select
@@ -435,7 +454,7 @@ create policy "Admins may delete advisory application files"
   to authenticated
   using (bucket_id = 'advisory-applications' and public.is_admin());
 
--- 12. Promote your first admin ------------------------------------------------
+-- 13. Promote your first admin -----------------------------------------------
 
 -- Nobody is an admin until you say so. Sign up through the site first, then
 -- uncomment this line with your own address and run it once. After that you
@@ -443,7 +462,7 @@ create policy "Admins may delete advisory application files"
 --
 -- update public.profiles set role = 'admin' where email = 'you@example.com';
 
--- 13. Column-level write hardening -------------------------------------------
+-- 14. Column-level write hardening --------------------------------------------
 
 -- RLS alone does NOT secure the role column. The owner-update policy in
 -- section 2 lets a member update their own row, and an RLS policy cannot
@@ -459,7 +478,7 @@ create policy "Admins may delete advisory application files"
 revoke update on public.profiles from anon, authenticated;
 grant update (full_name, membership_tier) on public.profiles to authenticated;
 
--- 14. Guarded role changes ----------------------------------------------------
+-- 15. Guarded role changes ----------------------------------------------------
 
 -- Because of the grant above, even an admin cannot write `role` directly.
 -- Role changes go through this function instead: it runs as its definer (so

@@ -21,6 +21,12 @@ function delta(current: number, previous: number): number | null {
   return Math.round(((current - previous) / previous) * 100);
 }
 
+/** "AI Ethics Program" / "AI Ethics Program +2" — a registration can cover several. */
+function summarise(names: string[] | null | undefined) {
+  if (!names || names.length === 0) return "—";
+  return names.length === 1 ? names[0] : `${names[0]} +${names.length - 1}`;
+}
+
 function since(now: Date, days: number) {
   return new Date(now.getTime() - days * DAY).toISOString();
 }
@@ -50,15 +56,24 @@ export default async function AdminDashboard() {
   const now = new Date();
   const supabase = await createClient();
 
-  const [profilesRes, registrationsRes, nominationsRes, advisoryRes] =
-    await Promise.all([
+  const [
+    profilesRes,
+    registrationsRes,
+    certificationsRes,
+    nominationsRes,
+    advisoryRes,
+  ] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, full_name, email, membership_tier, created_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("program_registrations")
-        .select("id, program_name, full_name, amount_cents, status, created_at")
+        .select("id, program_names, full_name, amount_cents, status, created_at")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("certification_registrations")
+        .select("id, certification_names, full_name, amount_cents, status, created_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("nominations")
@@ -74,6 +89,7 @@ export default async function AdminDashboard() {
 
   const profiles = profilesRes.data ?? [];
   const registrations = registrationsRes.data ?? [];
+  const certifications = certificationsRes.data ?? [];
   const nominations = nominationsRes.data ?? [];
   const advisory = advisoryRes.data ?? [];
 
@@ -93,11 +109,14 @@ export default async function AdminDashboard() {
     inWindow(profiles, prior30, last30).length,
   );
   const registrationDelta = delta(
-    inWindow(registrations, last30).length,
-    inWindow(registrations, prior30, last30).length,
+    inWindow([...registrations, ...certifications], last30).length,
+    inWindow([...registrations, ...certifications], prior30, last30).length,
   );
 
-  const paid = registrations.filter((r) => r.status === "paid");
+  // Programs and certifications are two checkout flows into two tables; the
+  // money tiles have to span both or they quietly understate revenue.
+  const allSales = [...registrations, ...certifications];
+  const paid = allSales.filter((r) => r.status === "paid");
   const revenue = paid.reduce((sum, r) => sum + (r.amount_cents ?? 0), 0);
   const revenueDelta = delta(
     inWindow(paid, last30).reduce((s, r) => s + r.amount_cents, 0),
@@ -138,11 +157,24 @@ export default async function AdminDashboard() {
       at: r.created_at,
       kind: "Registration",
       who: r.full_name,
-      detail: `${r.program_name} · ${formatMoney(r.amount_cents)}`,
+      detail: `${summarise(r.program_names)} · ${formatMoney(r.amount_cents)}`,
       href: "/admin/registrations",
       tone: (r.status === "paid"
         ? "green"
         : r.status === "pending"
+          ? "amber"
+          : "slate") as ActivityItem["tone"],
+    })),
+    ...certifications.slice(0, 8).map((c) => ({
+      id: `cert-${c.id}`,
+      at: c.created_at,
+      kind: "Certification",
+      who: c.full_name,
+      detail: `${summarise(c.certification_names)} · ${formatMoney(c.amount_cents)}`,
+      href: "/admin/certifications",
+      tone: (c.status === "paid"
+        ? "green"
+        : c.status === "pending"
           ? "amber"
           : "slate") as ActivityItem["tone"],
     })),
@@ -194,10 +226,10 @@ export default async function AdminDashboard() {
           hint="vs. previous 30 days"
         />
         <StatCard
-          label="Program registrations"
-          value={registrations.length.toLocaleString()}
+          label="Registrations"
+          value={(registrations.length + certifications.length).toLocaleString()}
           delta={registrationDelta}
-          hint={`${paid.length} paid`}
+          hint={`${registrations.length} program · ${certifications.length} certification`}
         />
         <StatCard
           label="Revenue collected"
