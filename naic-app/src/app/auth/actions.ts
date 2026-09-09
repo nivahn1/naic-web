@@ -156,6 +156,7 @@ export async function requestPasswordReset(
 
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? "";
+  console.log("[probe] reset origin =", JSON.stringify(origin), "-> redirectTo =", `${origin}/auth/confirm?next=/reset-password`);
 
   // The link lands on /auth/confirm, which establishes a short-lived recovery
   // session and forwards to /reset-password.
