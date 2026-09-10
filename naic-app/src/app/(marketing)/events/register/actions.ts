@@ -7,18 +7,17 @@ import * as z from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
-import { CERTIFICATIONS } from "../certification";
+import { EVENTS } from "../events";
 import { COUNTRIES } from "@/lib/countries";
-import { getCurrentProfile } from "@/lib/profile";
-import { getTier, applyDiscount } from "@/lib/tiers";
 
 export type RegistrationResult = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
 };
 
-const CERT_SLUGS = CERTIFICATIONS.map((c) => c.slug) as [string, ...string[]];
+const EVENT_SLUGS = EVENTS.map((e) => e.slug) as [string, ...string[]];
 const COUNTRY_CODES = COUNTRIES.map((c) => c.code) as [string, ...string[]];
+const REGISTRATION_PRICE_CENTS = 14900;
 
 const optionalText = (max: number) =>
   z
@@ -29,9 +28,9 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null));
 
 const RegistrationSchema = z.object({
-  certification_slugs: z
-    .array(z.enum(CERT_SLUGS))
-    .min(1, { error: "Choose at least one certification." }),
+  event_slugs: z
+    .array(z.enum(EVENT_SLUGS))
+    .min(1, { error: "Choose at least one event." }),
   full_name: z
     .string()
     .trim()
@@ -86,7 +85,7 @@ export async function submitRegistration(
   if (formData.get("website")) return {};
 
   const parsed = RegistrationSchema.safeParse({
-    certification_slugs: formData.getAll("certification_slugs"),
+    event_slugs: formData.getAll("event_slugs"),
     full_name: formData.get("full_name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
@@ -101,20 +100,15 @@ export async function submitRegistration(
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const certifications = parsed.data.certification_slugs.map(
-    (slug) => CERTIFICATIONS.find((c) => c.slug === slug)!,
+  const events = parsed.data.event_slugs.map(
+    (slug) => EVENTS.find((e) => e.slug === slug)!,
   );
-
-  // The discount is looked up from the signed-in member's own session, never
-  // trusted from form input, so it can't be tampered with client-side.
-  const { user, profile } = await getCurrentProfile();
-  const discountPercent = getTier(profile?.membership_tier).certificationDiscountPercent ?? 0;
-  const discountedPrices = certifications.map((c) =>
-    applyDiscount(c.priceCents, discountPercent),
-  );
-  const totalCents = discountedPrices.reduce((sum, c) => sum + c, 0);
+  const totalCents = events.length * REGISTRATION_PRICE_CENTS;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Generated up front rather than read back after insert: the table has
   // no SELECT policy for anon/authenticated (write-only by design), so
@@ -122,12 +116,10 @@ export async function submitRegistration(
   // insert itself succeeded.
   const registrationId = randomUUID();
 
-  const { error } = await supabase.from("certification_registrations").insert({
+  const { error } = await supabase.from("event_registrations").insert({
     id: registrationId,
-    certification_slugs: certifications.map((c) => c.slug),
-    certification_names: certifications.map((c) => c.name),
-    price_cents: certifications.map((c) => c.priceCents),
-    discount_percent: discountPercent,
+    event_slugs: events.map((e) => e.slug),
+    event_names: events.map((e) => e.name),
     full_name: parsed.data.full_name,
     email: parsed.data.email,
     phone: parsed.data.phone,
@@ -147,7 +139,7 @@ export async function submitRegistration(
   if (!isStripeConfigured || !stripe) {
     // No payment processor connected yet — the registration is recorded as
     // pending and we stop here rather than pretending to take payment.
-    redirect(`/certification/register/success?registration_id=${registrationId}`);
+    redirect(`/events/register/success?registration_id=${registrationId}`);
   }
 
   const origin = await siteOrigin();
@@ -171,26 +163,23 @@ export async function submitRegistration(
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: customer.id,
-    line_items: certifications.map((c, i) => ({
+    line_items: events.map((e) => ({
       price_data: {
         currency: "usd",
-        unit_amount: discountedPrices[i],
+        unit_amount: REGISTRATION_PRICE_CENTS,
         product_data: {
-          name: `${c.name} (${c.code}) — Registration`,
-          description: discountPercent
-            ? `National AI Certification Institute™ registration — ${discountPercent}% member discount applied`
-            : "National AI Certification Institute™ registration",
+          name: `${e.name} — Event Registration`,
+          description: "National AI Consortium event registration",
         },
       },
       quantity: 1,
     })),
     billing_address_collection: "auto",
-    success_url: `${origin}/certification/register/success?registration_id=${registrationId}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/certification/register?certification=${certifications[0].slug}&cancelled=1`,
+    success_url: `${origin}/events/register/success?registration_id=${registrationId}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/events/register?event=${events[0].slug}&cancelled=1`,
     metadata: {
       registration_id: registrationId,
-      discount_percent: String(discountPercent),
-      certification_slugs: certifications.map((c) => c.slug).join(","),
+      event_slugs: events.map((e) => e.slug).join(","),
     },
   });
 

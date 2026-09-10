@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import Link from "next/link";
 import { submitRegistration, type RegistrationResult } from "./actions";
 import { REGISTERABLE_TRAININGS } from "../training";
 import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
@@ -140,12 +141,12 @@ export function RegistrationForm({
         </p>
         <p className="mt-2 text-sm text-[var(--muted)]">
           Need Customized AI Training instead?{" "}
-          <a
+          <Link
             href="/training/customized/consult"
             className="font-semibold text-violet-300 underline-offset-4 hover:underline"
           >
             Book a consultation →
-          </a>
+          </Link>
         </p>
       </fieldset>
 

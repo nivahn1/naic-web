@@ -71,8 +71,12 @@ function SubmitButton({ total }: { total: number }) {
 
 export function RegistrationForm({
   defaultProgramSlug,
+  discountPercent = 0,
 }: {
   defaultProgramSlug: string;
+  /** The signed-in member's program discount, applied for display only — the
+   *  server independently re-derives it from the session before charging. */
+  discountPercent?: number;
 }) {
   const [state, formAction] = useActionState<RegistrationResult, FormData>(
     submitRegistration,
@@ -81,7 +85,8 @@ export function RegistrationForm({
   const [selected, setSelected] = useState<string[]>([defaultProgramSlug]);
 
   const fieldErrors = state.fieldErrors ?? {};
-  const total = selected.length * REGISTRATION_PRICE;
+  const listTotal = selected.length * REGISTRATION_PRICE;
+  const total = listTotal * (1 - discountPercent / 100);
 
   const toggle = (slug: string) => {
     setSelected((cur) =>
@@ -133,10 +138,26 @@ export function RegistrationForm({
         ) : null}
         <p className="mt-4 text-sm text-[var(--muted)]">
           Total:{" "}
-          <span className="font-semibold text-white">
-            ${total.toLocaleString()}
-          </span>{" "}
+          {discountPercent > 0 ? (
+            <>
+              <span className="mr-1.5 text-[var(--muted)] line-through">
+                ${listTotal.toLocaleString()}
+              </span>
+              <span className="font-semibold text-white">
+                ${total.toLocaleString()}
+              </span>
+            </>
+          ) : (
+            <span className="font-semibold text-white">
+              ${total.toLocaleString()}
+            </span>
+          )}{" "}
           for {selected.length} program{selected.length === 1 ? "" : "s"}
+          {discountPercent > 0 ? (
+            <span className="ml-1.5 text-emerald-300">
+              — {discountPercent}% member discount applied
+            </span>
+          ) : null}
         </p>
       </fieldset>
 

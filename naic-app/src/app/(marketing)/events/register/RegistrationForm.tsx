@@ -3,8 +3,10 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRegistration, type RegistrationResult } from "./actions";
-import { CERTIFICATIONS } from "../certification";
+import { EVENTS, eventDateParts } from "../events";
 import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
+
+const REGISTRATION_PRICE = 149;
 
 const INPUT =
   "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70";
@@ -68,26 +70,18 @@ function SubmitButton({ total }: { total: number }) {
 }
 
 export function RegistrationForm({
-  defaultCertificationSlug,
-  discountPercent = 0,
+  defaultEventSlug,
 }: {
-  defaultCertificationSlug: string;
-  /** The signed-in member's certification discount, applied for display only — the
-   *  server independently re-derives it from the session before charging. */
-  discountPercent?: number;
+  defaultEventSlug: string;
 }) {
   const [state, formAction] = useActionState<RegistrationResult, FormData>(
     submitRegistration,
     {},
   );
-  const [selected, setSelected] = useState<string[]>([defaultCertificationSlug]);
+  const [selected, setSelected] = useState<string[]>([defaultEventSlug]);
 
   const fieldErrors = state.fieldErrors ?? {};
-  const listTotal = CERTIFICATIONS.filter((c) => selected.includes(c.slug)).reduce(
-    (sum, c) => sum + c.priceCents,
-    0,
-  ) / 100;
-  const total = listTotal * (1 - discountPercent / 100);
+  const total = selected.length * REGISTRATION_PRICE;
 
   const toggle = (slug: string) => {
     setSelected((cur) =>
@@ -108,65 +102,49 @@ export function RegistrationForm({
 
       <fieldset>
         <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
-          Certifications
+          Events
         </legend>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Select one or more. You&rsquo;ll pay for all of them in a single
-          checkout.
+          Select one or more — $149 each. You&rsquo;ll pay for all of them
+          in a single checkout.
         </p>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {CERTIFICATIONS.map((c) => (
-            <label
-              key={c.slug}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50"
-            >
-              <input
-                type="checkbox"
-                name="certification_slugs"
-                value={c.slug}
-                checked={selected.includes(c.slug)}
-                onChange={() => toggle(c.slug)}
-                className="h-4 w-4 shrink-0 accent-violet-600"
-              />
-              <span className="flex-1">
-                {c.name}
-                <span className="ml-1.5 text-xs text-[var(--muted)]">
-                  ({c.code})
+        <div className="mt-4 grid gap-2.5">
+          {EVENTS.map((e) => {
+            const { day, year } = eventDateParts(e);
+            return (
+              <label
+                key={e.slug}
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50"
+              >
+                <input
+                  type="checkbox"
+                  name="event_slugs"
+                  value={e.slug}
+                  checked={selected.includes(e.slug)}
+                  onChange={() => toggle(e.slug)}
+                  className="h-4 w-4 shrink-0 accent-violet-600"
+                />
+                <span className="flex-1">
+                  {e.name}
+                  <span className="ml-1.5 text-xs text-[var(--muted)]">
+                    ({day}, {year})
+                  </span>
                 </span>
-              </span>
-              <span className="font-display shrink-0 font-semibold text-white">
-                ${(c.priceCents / 100).toLocaleString()}
-              </span>
-            </label>
-          ))}
+              </label>
+            );
+          })}
         </div>
-        {fieldErrors.certification_slugs?.[0] ? (
+        {fieldErrors.event_slugs?.[0] ? (
           <p className="mt-1.5 text-xs text-rose-500">
-            {fieldErrors.certification_slugs[0]}
+            {fieldErrors.event_slugs[0]}
           </p>
         ) : null}
         <p className="mt-4 text-sm text-[var(--muted)]">
           Total:{" "}
-          {discountPercent > 0 ? (
-            <>
-              <span className="mr-1.5 text-[var(--muted)] line-through">
-                ${listTotal.toLocaleString()}
-              </span>
-              <span className="font-semibold text-white">
-                ${total.toLocaleString()}
-              </span>
-            </>
-          ) : (
-            <span className="font-semibold text-white">
-              ${total.toLocaleString()}
-            </span>
-          )}{" "}
-          for {selected.length} certification{selected.length === 1 ? "" : "s"}
-          {discountPercent > 0 ? (
-            <span className="ml-1.5 text-emerald-300">
-              — {discountPercent}% member discount applied
-            </span>
-          ) : null}
+          <span className="font-semibold text-white">
+            ${total.toLocaleString()}
+          </span>{" "}
+          for {selected.length} event{selected.length === 1 ? "" : "s"}
         </p>
       </fieldset>
 

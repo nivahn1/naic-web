@@ -8,6 +8,8 @@ import {
 } from "../../../_components/content";
 import { RegistrationForm } from "./RegistrationForm";
 import { PROGRAMS } from "../programs";
+import { getCurrentProfile } from "@/lib/profile";
+import { getTier } from "@/lib/tiers";
 
 export const metadata: Metadata = {
   title: "Register for a Program",
@@ -23,6 +25,8 @@ export default async function ProgramRegisterPage({
   const { program, cancelled } = await searchParams;
   const defaultProgramSlug =
     PROGRAMS.find((p) => p.slug === program)?.slug ?? PROGRAMS[0].slug;
+  const { profile } = await getCurrentProfile();
+  const discountPercent = getTier(profile?.membership_tier).programDiscountPercent ?? 0;
 
   return (
     <>
@@ -47,7 +51,10 @@ export default async function ProgramRegisterPage({
           </div>
         ) : null}
 
-        <RegistrationForm defaultProgramSlug={defaultProgramSlug} />
+        <RegistrationForm
+          defaultProgramSlug={defaultProgramSlug}
+          discountPercent={discountPercent}
+        />
 
         <RelatedLinks
           links={[

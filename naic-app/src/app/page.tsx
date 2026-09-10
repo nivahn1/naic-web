@@ -8,6 +8,7 @@ import { UsMap } from "./_components/UsMap";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { LIVE_COUNT, STATE_COUNT } from "@/lib/chapters";
+import { WEBINARS, webinarDateShortLabel } from "./(marketing)/webinars/webinars";
 
 export const metadata: Metadata = {
   title: "Advancing AI Responsibly",
@@ -116,7 +117,6 @@ const CONFERENCES = [
   { name: "National AI Women’s Conference™", when: "Mar 24–25, 2026", body: "Amplifying the contributions of women at the forefront of AI through mentorship, networking, and strategic dialogue on advancing gender equity in the field." },
   { name: "National AI Emerging Conference™", when: "Apr 21–22, 2026", body: "A dynamic gathering for rising professionals, students, and early-career talent — mentorship, career development, and exposure to cutting-edge innovation." },
   { name: "AI National Conference™", when: "Sep 15–17, 2026", body: "The flagship gathering uniting leaders from business, government, academia, and technology to explore AI’s most transformative applications and strategic opportunities." },
-  { name: "AI Diversity, Equity & Inclusion Conference", when: "2026", body: "Fairness, representation, and accessibility in AI design and deployment — algorithmic bias, inclusive data practices, and voices from underrepresented communities." },
 ];
 
 const CALENDAR = [
@@ -130,15 +130,6 @@ const CALENDAR = [
   { date: "Oct 14", title: "National AI Forum™", note: "“Voices Shaping the Future of Artificial Intelligence”" },
   { date: "Nov 4", title: "National AI Multicultural Symposium™", note: "“Innovation at the Frontiers of AI Research”" },
   { date: "Nov 16–20", title: "National AI Week" },
-];
-
-const WEBINARS = [
-  { date: "Jan 29", title: "AI Trends & Forecast: What’s Ahead in 2026 and Beyond" },
-  { date: "Mar 19", title: "Responsible AI: Building Transparent and Trustworthy Systems" },
-  { date: "May 14", title: "Women Leading the Future of AI" },
-  { date: "Sep 10", title: "AI in Healthcare: Innovation with Responsibility" },
-  { date: "Oct 22", title: "AI & Climate Solutions: Technology for Sustainability" },
-  { date: "Nov 9", title: "AI in Finance: Risk, Regulation & Opportunity" },
 ];
 
 const RECOGNITION = [
@@ -527,18 +518,21 @@ export default async function Home() {
               <ul className="mt-5 space-y-3">
                 {WEBINARS.map((w) => (
                   <li
-                    key={w.title}
+                    key={w.slug}
                     className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-4"
                   >
                     <span className="font-display text-xs font-semibold uppercase tracking-wide text-fuchsia-500 dark:text-fuchsia-400">
-                      {w.date}
+                      {webinarDateShortLabel(w)}
                     </span>
                     <p className="mt-1 text-sm leading-6 text-white dark:text-white">{w.title}</p>
                   </li>
                 ))}
               </ul>
               <p className="mt-4 text-xs text-[var(--muted)]">
-                Quarterly AI Ethics Roundtables run alongside the series.
+                Quarterly AI Ethics Roundtables run alongside the series.{" "}
+                <Link href="/webinars" className="font-semibold text-violet-300 hover:underline">
+                  View all webinars →
+                </Link>
               </p>
             </div>
           </div>

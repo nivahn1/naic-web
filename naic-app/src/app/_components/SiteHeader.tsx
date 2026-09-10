@@ -22,7 +22,17 @@ const NAV: {
   { href: "/certification", label: "Certification" },
   { href: "/programs", label: "Programs" },
   { href: "/training", label: "Training" },
-  { href: "/events", label: "Events" },
+  {
+    href: "/schedule",
+    label: "Schedule",
+    children: [
+      { href: "/webinars", label: "Webinars" },
+      { href: "/conferences", label: "Conferences" },
+      { href: "/events", label: "Events" },
+      { href: "/weeks", label: "AI Weeks" },
+      { href: "/celebrations", label: "Celebrations" },
+    ],
+  },
   { href: "/recognition", label: "Recognition" },
   { href: "/chapters", label: "Chapters" },
 ];
@@ -68,8 +78,8 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
           {NAV.map((item) =>
             item.children ? (
               <div key={item.href} className="group relative">
-                <button
-                  type="button"
+                <Link
+                  href={item.href}
                   className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
                 >
                   {item.label}
@@ -89,7 +99,7 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
                       strokeLinejoin="round"
                     />
                   </svg>
-                </button>
+                </Link>
                 <div className="invisible absolute left-0 top-full z-10 pt-2 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                   <div className="min-w-[220px] rounded-xl border border-white/15 bg-[#00004d]/95 p-1.5 shadow-xl backdrop-blur-xl">
                     {item.children.map((child) => (
@@ -165,36 +175,45 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
             {NAV.map((item) =>
               item.children ? (
                 <div key={item.href}>
-                  <button
-                    type="button"
-                    aria-expanded={mobileSubOpen === item.href}
-                    onClick={() =>
-                      setMobileSubOpen((cur) =>
-                        cur === item.href ? null : item.href,
-                      )
-                    }
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
-                  >
-                    {item.label}
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                      aria-hidden
-                      className={`transition-transform ${
-                        mobileSubOpen === item.href ? "rotate-180" : ""
-                      }`}
+                  <div className="flex items-center">
+                    <Link
+                      href={item.href}
+                      onClick={closeMenu}
+                      className="flex-1 rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
                     >
-                      <path
-                        d="M2 3.5 5 6.5 8 3.5"
-                        stroke="currentColor"
-                        strokeWidth="1.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                      {item.label}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-expanded={mobileSubOpen === item.href}
+                      aria-label={`Toggle ${item.label} submenu`}
+                      onClick={() =>
+                        setMobileSubOpen((cur) =>
+                          cur === item.href ? null : item.href,
+                        )
+                      }
+                      className="rounded-lg p-2.5 text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+                    >
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        aria-hidden
+                        className={`transition-transform ${
+                          mobileSubOpen === item.href ? "rotate-180" : ""
+                        }`}
+                      >
+                        <path
+                          d="M2 3.5 5 6.5 8 3.5"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                   {mobileSubOpen === item.href ? (
                     <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
                       {item.children.map((child) => (

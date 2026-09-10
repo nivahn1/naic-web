@@ -9,6 +9,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 import { PROGRAMS } from "../programs";
 import { COUNTRIES } from "@/lib/countries";
+import { getCurrentProfile } from "@/lib/profile";
+import { getTier, applyDiscount } from "@/lib/tiers";
 
 export type RegistrationResult = {
   error?: string;
@@ -103,12 +105,15 @@ export async function submitRegistration(
   const programs = parsed.data.program_slugs.map(
     (slug) => PROGRAMS.find((p) => p.slug === slug)!,
   );
-  const totalCents = programs.length * REGISTRATION_PRICE_CENTS;
+
+  // The discount is looked up from the signed-in member's own session, never
+  // trusted from form input, so it can't be tampered with client-side.
+  const { user, profile } = await getCurrentProfile();
+  const discountPercent = getTier(profile?.membership_tier).programDiscountPercent ?? 0;
+  const discountedPriceCents = applyDiscount(REGISTRATION_PRICE_CENTS, discountPercent);
+  const totalCents = programs.length * discountedPriceCents;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   // Generated up front rather than read back after insert: the table has
   // no SELECT policy for anon/authenticated (write-only by design), so
@@ -120,6 +125,7 @@ export async function submitRegistration(
     id: registrationId,
     program_slugs: programs.map((p) => p.slug),
     program_names: programs.map((p) => p.name),
+    discount_percent: discountPercent,
     full_name: parsed.data.full_name,
     email: parsed.data.email,
     phone: parsed.data.phone,
@@ -166,10 +172,12 @@ export async function submitRegistration(
     line_items: programs.map((p) => ({
       price_data: {
         currency: "usd",
-        unit_amount: REGISTRATION_PRICE_CENTS,
+        unit_amount: discountedPriceCents,
         product_data: {
           name: `${p.name} — Registration`,
-          description: "National AI Consortium program registration",
+          description: discountPercent
+            ? `National AI Consortium program registration — ${discountPercent}% member discount applied`
+            : "National AI Consortium program registration",
         },
       },
       quantity: 1,
@@ -179,6 +187,7 @@ export async function submitRegistration(
     cancel_url: `${origin}/programs/register?program=${programs[0].slug}&cancelled=1`,
     metadata: {
       registration_id: registrationId,
+      discount_percent: String(discountPercent),
       program_slugs: programs.map((p) => p.slug).join(","),
     },
   });

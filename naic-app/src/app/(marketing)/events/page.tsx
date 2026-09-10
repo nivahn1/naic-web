@@ -106,9 +106,9 @@ export default function EventsPage() {
 
       <Section>
         <CtaRow
-          text="Join the Consortium for member registration rates and early access to agendas."
+          text="Register for an upcoming event — $149 per event."
           actions={[
-            { label: "Become a member", href: "/signup", primary: true },
+            { label: "Register — $149", href: "/events/register", primary: true },
             { label: "See conferences", href: "/conferences" },
           ]}
         />

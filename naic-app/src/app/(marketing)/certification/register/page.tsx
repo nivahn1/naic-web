@@ -8,6 +8,8 @@ import {
 } from "../../../_components/content";
 import { RegistrationForm } from "./RegistrationForm";
 import { CERTIFICATIONS } from "../certification";
+import { getCurrentProfile } from "@/lib/profile";
+import { getTier } from "@/lib/tiers";
 
 export const metadata: Metadata = {
   title: "Register for Certification",
@@ -24,6 +26,9 @@ export default async function CertificationRegisterPage({
   const defaultCertificationSlug =
     CERTIFICATIONS.find((c) => c.slug === certification)?.slug ??
     CERTIFICATIONS[0].slug;
+  const { profile } = await getCurrentProfile();
+  const discountPercent =
+    getTier(profile?.membership_tier).certificationDiscountPercent ?? 0;
 
   return (
     <>
@@ -48,7 +53,10 @@ export default async function CertificationRegisterPage({
           </div>
         ) : null}
 
-        <RegistrationForm defaultCertificationSlug={defaultCertificationSlug} />
+        <RegistrationForm
+          defaultCertificationSlug={defaultCertificationSlug}
+          discountPercent={discountPercent}
+        />
 
         <RelatedLinks
           links={[

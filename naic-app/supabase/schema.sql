@@ -185,6 +185,7 @@ create table if not exists public.program_registrations (
   id                          uuid primary key default gen_random_uuid(),
   program_slugs               text[] not null check (array_length(program_slugs, 1) between 1 and 20),
   program_names               text[] not null,
+  discount_percent            smallint not null default 0 check (discount_percent between 0 and 100),
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -226,6 +227,7 @@ create table if not exists public.certification_registrations (
   certification_slugs         text[] not null check (array_length(certification_slugs, 1) between 1 and 20),
   certification_names         text[] not null,
   price_cents                 integer[] not null,
+  discount_percent            smallint not null default 0 check (discount_percent between 0 and 100),
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -317,3 +319,209 @@ create policy "Anyone may request a customized training consultation"
 
 create index if not exists customized_training_consultations_created_at_idx
   on public.customized_training_consultations (created_at desc);
+
+-- 12. Webinar registrations -----------------------------------------------------
+
+-- Flat $99/webinar, same shape as training_registrations.
+create table if not exists public.webinar_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  webinar_slugs               text[] not null check (array_length(webinar_slugs, 1) between 1 and 20),
+  webinar_names               text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.webinar_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a webinar registration" on public.webinar_registrations;
+create policy "Anyone may submit a webinar registration"
+  on public.webinar_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists webinar_registrations_created_at_idx
+  on public.webinar_registrations (created_at desc);
+
+-- 13. Event registrations -------------------------------------------------------
+
+-- Flat $149/event, same shape as webinar_registrations.
+create table if not exists public.event_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  event_slugs                 text[] not null check (array_length(event_slugs, 1) between 1 and 20),
+  event_names                 text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.event_registrations enable row level security;
+
+drop policy if exists "Anyone may submit an event registration" on public.event_registrations;
+create policy "Anyone may submit an event registration"
+  on public.event_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists event_registrations_created_at_idx
+  on public.event_registrations (created_at desc);
+
+-- 14. Conference registrations ---------------------------------------------------
+
+-- Standard ($1,199) or VIP ($1,399), chosen per conference — conference_tiers and
+-- price_cents are parallel arrays to conference_slugs, like certification_registrations.
+create table if not exists public.conference_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  conference_slugs            text[] not null check (array_length(conference_slugs, 1) between 1 and 20),
+  conference_names            text[] not null,
+  conference_tiers            text[] not null,
+  price_cents                 integer[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.conference_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a conference registration" on public.conference_registrations;
+create policy "Anyone may submit a conference registration"
+  on public.conference_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists conference_registrations_created_at_idx
+  on public.conference_registrations (created_at desc);
+
+-- 15. Conference inquiries (nonprofit / government) ------------------------------
+
+-- No payment — nonprofit and government registrants contact us instead of
+-- checking out. Write-only, same as the other public contact forms.
+create table if not exists public.conference_inquiries (
+  id                 uuid primary key default gen_random_uuid(),
+  conference_slugs   text[] not null check (array_length(conference_slugs, 1) between 1 and 20),
+  organization_name  text not null check (char_length(organization_name) between 1 and 160),
+  organization_type  text not null check (organization_type in ('nonprofit', 'government')),
+  full_name          text not null check (char_length(full_name) between 2 and 120),
+  email              text not null check (char_length(email) <= 254),
+  phone              text check (char_length(phone) <= 40),
+  message            text check (char_length(message) <= 4000),
+  submitted_by       uuid references auth.users (id) on delete set null,
+  created_at         timestamptz not null default now()
+);
+
+alter table public.conference_inquiries enable row level security;
+
+drop policy if exists "Anyone may submit a conference inquiry" on public.conference_inquiries;
+create policy "Anyone may submit a conference inquiry"
+  on public.conference_inquiries for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists conference_inquiries_created_at_idx
+  on public.conference_inquiries (created_at desc);
+
+-- 16. AI Week registrations ------------------------------------------------------
+
+-- Flat $599/week, same shape as webinar_registrations.
+create table if not exists public.week_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  week_slugs                  text[] not null check (array_length(week_slugs, 1) between 1 and 20),
+  week_names                  text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.week_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a week registration" on public.week_registrations;
+create policy "Anyone may submit a week registration"
+  on public.week_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists week_registrations_created_at_idx
+  on public.week_registrations (created_at desc);
+
+-- 17. Celebration registrations ---------------------------------------------------
+
+-- Flat $2,499/celebration, same shape as week_registrations.
+create table if not exists public.celebration_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  celebration_slugs           text[] not null check (array_length(celebration_slugs, 1) between 1 and 20),
+  celebration_names           text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
+
+alter table public.celebration_registrations enable row level security;
+
+drop policy if exists "Anyone may submit a celebration registration" on public.celebration_registrations;
+create policy "Anyone may submit a celebration registration"
+  on public.celebration_registrations for insert
+  to anon, authenticated
+  with check (true);
+
+create index if not exists celebration_registrations_created_at_idx
+  on public.celebration_registrations (created_at desc);

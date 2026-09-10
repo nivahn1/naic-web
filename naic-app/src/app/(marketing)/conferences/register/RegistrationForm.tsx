@@ -3,8 +3,13 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRegistration, type RegistrationResult } from "./actions";
-import { CERTIFICATIONS } from "../certification";
+import { CONFERENCES } from "../conferences";
 import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
+
+const STANDARD_PRICE = 1199;
+const VIP_PRICE = 1399;
+
+type Tier = "" | "standard" | "vip";
 
 const INPUT =
   "w-full rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-violet-400/70";
@@ -68,32 +73,26 @@ function SubmitButton({ total }: { total: number }) {
 }
 
 export function RegistrationForm({
-  defaultCertificationSlug,
-  discountPercent = 0,
+  defaultConferenceSlug,
 }: {
-  defaultCertificationSlug: string;
-  /** The signed-in member's certification discount, applied for display only — the
-   *  server independently re-derives it from the session before charging. */
-  discountPercent?: number;
+  defaultConferenceSlug: string;
 }) {
   const [state, formAction] = useActionState<RegistrationResult, FormData>(
     submitRegistration,
     {},
   );
-  const [selected, setSelected] = useState<string[]>([defaultCertificationSlug]);
+  const [tiers, setTiers] = useState<Record<string, Tier>>({
+    [defaultConferenceSlug]: "standard",
+  });
 
   const fieldErrors = state.fieldErrors ?? {};
-  const listTotal = CERTIFICATIONS.filter((c) => selected.includes(c.slug)).reduce(
-    (sum, c) => sum + c.priceCents,
-    0,
-  ) / 100;
-  const total = listTotal * (1 - discountPercent / 100);
-
-  const toggle = (slug: string) => {
-    setSelected((cur) =>
-      cur.includes(slug) ? cur.filter((s) => s !== slug) : [...cur, slug],
-    );
-  };
+  const selectedCount = Object.values(tiers).filter((t) => t).length;
+  const total = CONFERENCES.reduce((sum, c) => {
+    const tier = tiers[c.slug];
+    if (tier === "vip") return sum + VIP_PRICE;
+    if (tier === "standard") return sum + STANDARD_PRICE;
+    return sum;
+  }, 0);
 
   return (
     <form
@@ -108,65 +107,51 @@ export function RegistrationForm({
 
       <fieldset>
         <legend className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
-          Certifications
+          Conferences
         </legend>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Select one or more. You&rsquo;ll pay for all of them in a single
-          checkout.
+          Choose Standard ($1,199) or VIP ($1,399) for each conference
+          you&rsquo;re registering for.
         </p>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {CERTIFICATIONS.map((c) => (
-            <label
+        <div className="mt-4 grid gap-2.5">
+          {CONFERENCES.map((c) => (
+            <div
               key={c.slug}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 transition-colors hover:border-violet-400/50"
+              className="flex flex-col gap-2 rounded-xl border border-[var(--surface-border)] bg-[var(--background)] px-4 py-3 text-sm text-slate-200 sm:flex-row sm:items-center sm:justify-between"
             >
-              <input
-                type="checkbox"
-                name="certification_slugs"
-                value={c.slug}
-                checked={selected.includes(c.slug)}
-                onChange={() => toggle(c.slug)}
-                className="h-4 w-4 shrink-0 accent-violet-600"
-              />
-              <span className="flex-1">
-                {c.name}
-                <span className="ml-1.5 text-xs text-[var(--muted)]">
-                  ({c.code})
-                </span>
-              </span>
-              <span className="font-display shrink-0 font-semibold text-white">
-                ${(c.priceCents / 100).toLocaleString()}
-              </span>
-            </label>
+              <div>
+                <p className="font-medium text-white">{c.name}</p>
+                <p className="text-xs text-[var(--muted)]">{c.when}</p>
+              </div>
+              <select
+                name={`tier_${c.slug}`}
+                value={tiers[c.slug] ?? ""}
+                onChange={(e) =>
+                  setTiers((cur) => ({
+                    ...cur,
+                    [c.slug]: e.target.value as Tier,
+                  }))
+                }
+                className={`${INPUT} sm:w-56`}
+              >
+                <option value="">Not attending</option>
+                <option value="standard">Standard — $1,199</option>
+                <option value="vip">VIP — $1,399</option>
+              </select>
+            </div>
           ))}
         </div>
-        {fieldErrors.certification_slugs?.[0] ? (
+        {fieldErrors.conferences?.[0] ? (
           <p className="mt-1.5 text-xs text-rose-500">
-            {fieldErrors.certification_slugs[0]}
+            {fieldErrors.conferences[0]}
           </p>
         ) : null}
         <p className="mt-4 text-sm text-[var(--muted)]">
           Total:{" "}
-          {discountPercent > 0 ? (
-            <>
-              <span className="mr-1.5 text-[var(--muted)] line-through">
-                ${listTotal.toLocaleString()}
-              </span>
-              <span className="font-semibold text-white">
-                ${total.toLocaleString()}
-              </span>
-            </>
-          ) : (
-            <span className="font-semibold text-white">
-              ${total.toLocaleString()}
-            </span>
-          )}{" "}
-          for {selected.length} certification{selected.length === 1 ? "" : "s"}
-          {discountPercent > 0 ? (
-            <span className="ml-1.5 text-emerald-300">
-              — {discountPercent}% member discount applied
-            </span>
-          ) : null}
+          <span className="font-semibold text-white">
+            ${total.toLocaleString()}
+          </span>{" "}
+          for {selectedCount} conference{selectedCount === 1 ? "" : "s"}
         </p>
       </fieldset>
 
