@@ -9,6 +9,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 import { CERTIFICATIONS } from "../certification";
 import { COUNTRIES } from "@/lib/countries";
+import { getCurrentProfile } from "@/lib/profile";
+import { getTier, applyDiscount } from "@/lib/tiers";
 
 export type RegistrationResult = {
   error?: string;
@@ -102,12 +104,17 @@ export async function submitRegistration(
   const certifications = parsed.data.certification_slugs.map(
     (slug) => CERTIFICATIONS.find((c) => c.slug === slug)!,
   );
-  const totalCents = certifications.reduce((sum, c) => sum + c.priceCents, 0);
+
+  // The discount is looked up from the signed-in member's own session, never
+  // trusted from form input, so it can't be tampered with client-side.
+  const { user, profile } = await getCurrentProfile();
+  const discountPercent = getTier(profile?.membership_tier).certificationDiscountPercent ?? 0;
+  const discountedPrices = certifications.map((c) =>
+    applyDiscount(c.priceCents, discountPercent),
+  );
+  const totalCents = discountedPrices.reduce((sum, c) => sum + c, 0);
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   // Generated up front rather than read back after insert: the table has
   // no SELECT policy for anon/authenticated (write-only by design), so
@@ -120,6 +127,7 @@ export async function submitRegistration(
     certification_slugs: certifications.map((c) => c.slug),
     certification_names: certifications.map((c) => c.name),
     price_cents: certifications.map((c) => c.priceCents),
+    discount_percent: discountPercent,
     full_name: parsed.data.full_name,
     email: parsed.data.email,
     phone: parsed.data.phone,
@@ -163,13 +171,15 @@ export async function submitRegistration(
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: customer.id,
-    line_items: certifications.map((c) => ({
+    line_items: certifications.map((c, i) => ({
       price_data: {
         currency: "usd",
-        unit_amount: c.priceCents,
+        unit_amount: discountedPrices[i],
         product_data: {
           name: `${c.name} (${c.code}) — Registration`,
-          description: "National AI Certification Institute™ registration",
+          description: discountPercent
+            ? `National AI Certification Institute™ registration — ${discountPercent}% member discount applied`
+            : "National AI Certification Institute™ registration",
         },
       },
       quantity: 1,
@@ -179,6 +189,7 @@ export async function submitRegistration(
     cancel_url: `${origin}/certification/register?certification=${certifications[0].slug}&cancelled=1`,
     metadata: {
       registration_id: registrationId,
+      discount_percent: String(discountPercent),
       certification_slugs: certifications.map((c) => c.slug).join(","),
     },
   });

@@ -16,6 +16,10 @@ export type Tier = {
   priceValue: number;
   tag: string;
   features: string[];
+  /** % off certification registration checkout, per the tier's own feature list. */
+  certificationDiscountPercent?: number;
+  /** % off program registration checkout, per the tier's own feature list. */
+  programDiscountPercent?: number;
 };
 
 export const TIERS: Tier[] = [
@@ -39,6 +43,7 @@ export const TIERS: Tier[] = [
       "Networking lounge access",
       "10% off conferences & certifications",
     ],
+    certificationDiscountPercent: 10,
   },
   {
     id: "silver",
@@ -53,6 +58,7 @@ export const TIERS: Tier[] = [
       "15% off certifications",
       "Member community & job board",
     ],
+    certificationDiscountPercent: 15,
   },
   {
     id: "gold",
@@ -67,6 +73,7 @@ export const TIERS: Tier[] = [
       "1 certification included",
       "20% off Programs",
     ],
+    programDiscountPercent: 20,
   },
   {
     id: "platinum",
@@ -101,4 +108,17 @@ export const TIER_IDS = TIERS.map((t) => t.id) as [TierId, ...TierId[]];
 
 export function getTier(id: string | null | undefined): Tier {
   return TIERS.find((t) => t.id === id) ?? TIERS[0];
+}
+
+const TIER_RANK = new Map(TIER_IDS.map((id, i) => [id, i]));
+
+/** Does `current` meet or exceed `required` in the tier ladder (free < bronze < … < diamond)? */
+export function meetsTier(current: TierId, required: TierId): boolean {
+  return (TIER_RANK.get(current) ?? 0) >= (TIER_RANK.get(required) ?? 0);
+}
+
+/** Applies a whole-percent discount to a cents amount, rounding to the nearest cent. */
+export function applyDiscount(cents: number, percent: number | undefined): number {
+  if (!percent) return cents;
+  return Math.round(cents * (1 - percent / 100));
 }

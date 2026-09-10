@@ -10,7 +10,12 @@ create table if not exists public.profiles (
                  check (membership_tier in
                    ('free','bronze','silver','gold','platinum','diamond')),
   created_at     timestamptz not null default now(),
-  updated_at     timestamptz not null default now()
+  updated_at     timestamptz not null default now(),
+  -- Added directly against the live project (not yet exercised by app code
+  -- in this branch) — tracked here so schema.sql matches reality.
+  role           text not null default 'member'
+                 check (role in ('member', 'admin')),
+  email          text
 );
 
 -- 2. Row Level Security -------------------------------------------------------
@@ -101,7 +106,11 @@ create table if not exists public.nominations (
   awards             text[] not null check (array_length(awards, 1) between 1 and 6),
   rationale          text not null check (char_length(rationale) between 40 and 4000),
   submitted_by       uuid references auth.users (id) on delete set null,
-  created_at         timestamptz not null default now()
+  created_at         timestamptz not null default now(),
+  -- Added directly against the live project for the review workflow —
+  -- tracked here so schema.sql matches reality.
+  review_status      text not null default 'new'
+                     check (review_status in ('new', 'reviewed', 'shortlisted', 'archived'))
 );
 
 alter table public.nominations enable row level security;
@@ -132,7 +141,11 @@ create table if not exists public.advisory_applications (
   bio_path      text not null,
   headshot_path text not null,
   submitted_by  uuid references auth.users (id) on delete set null,
-  created_at    timestamptz not null default now()
+  created_at    timestamptz not null default now(),
+  -- Added directly against the live project for the review workflow —
+  -- tracked here so schema.sql matches reality.
+  review_status text not null default 'new'
+                check (review_status in ('new', 'reviewed', 'approved', 'archived'))
 );
 
 alter table public.advisory_applications enable row level security;
@@ -185,6 +198,7 @@ create table if not exists public.program_registrations (
   id                          uuid primary key default gen_random_uuid(),
   program_slugs               text[] not null check (array_length(program_slugs, 1) between 1 and 20),
   program_names               text[] not null,
+  discount_percent            smallint not null default 0 check (discount_percent between 0 and 100),
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -226,6 +240,7 @@ create table if not exists public.certification_registrations (
   certification_slugs         text[] not null check (array_length(certification_slugs, 1) between 1 and 20),
   certification_names         text[] not null,
   price_cents                 integer[] not null,
+  discount_percent            smallint not null default 0 check (discount_percent between 0 and 100),
   full_name                   text not null check (char_length(full_name) between 2 and 120),
   email                       text not null check (char_length(email) <= 254),
   phone                       text check (char_length(phone) <= 40),
@@ -254,261 +269,272 @@ create policy "Anyone may submit a certification registration"
 create index if not exists certification_registrations_created_at_idx
   on public.certification_registrations (created_at desc);
 
--- 10. Admin role --------------------------------------------------------------
+-- 10. Training registrations ---------------------------------------------------
 
--- Admins are ordinary members with `role = 'admin'`. There is no separate
--- admin table and no service-role dependency for reads: every admin-only
--- query below is enforced by Postgres itself, so a bug in the app layer
--- cannot leak submissions.
-alter table public.profiles
-  add column if not exists role text not null default 'member'
-  check (role in ('member', 'admin'));
+-- Same shape as program_registrations — flat $999 per training. Customized
+-- AI Training is intentionally excluded (see table 11): it's scoped through
+-- a consultation, not this checkout.
+create table if not exists public.training_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  training_slugs              text[] not null check (array_length(training_slugs, 1) between 1 and 20),
+  training_names              text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
--- Email is duplicated onto the profile so the admin tables can search and
--- sort by it. auth.users is not reachable over PostgREST.
-alter table public.profiles
-  add column if not exists email text;
+alter table public.training_registrations enable row level security;
 
--- `security definer` is essential: is_admin() reads public.profiles, and it
--- is used inside a policy ON public.profiles. Running as the definer skips
--- RLS on that read and avoids infinite policy recursion.
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = (select auth.uid())
-      and role = 'admin'
-  );
-$$;
+drop policy if exists "Anyone may submit a training registration" on public.training_registrations;
+create policy "Anyone may submit a training registration"
+  on public.training_registrations for insert
+  to anon, authenticated
+  with check (true);
 
-revoke execute on function public.is_admin() from anon, public;
-grant execute on function public.is_admin() to authenticated;
+create index if not exists training_registrations_created_at_idx
+  on public.training_registrations (created_at desc);
 
--- Keep the profile's email in sync with the auth record.
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  insert into public.profiles (id, full_name, email)
-  values (new.id, new.raw_user_meta_data ->> 'full_name', new.email)
-  on conflict (id) do update set email = excluded.email;
-  return new;
-end;
-$$;
+-- 11. Customized AI Training consultation requests -----------------------------
 
-revoke execute on function public.handle_new_user() from anon, authenticated, public;
+-- No payment here — this is a "book a consultation" contact form. Write-only,
+-- same as the other public forms; read only via the dashboard or service role.
+create table if not exists public.customized_training_consultations (
+  id             uuid primary key default gen_random_uuid(),
+  full_name      text not null check (char_length(full_name) between 2 and 120),
+  email          text not null check (char_length(email) <= 254),
+  phone          text check (char_length(phone) <= 40),
+  company        text not null check (char_length(company) between 1 and 160),
+  format         text check (char_length(format) <= 80),
+  message        text not null check (char_length(message) between 20 and 4000),
+  submitted_by   uuid references auth.users (id) on delete set null,
+  created_at     timestamptz not null default now()
+);
 
-create or replace function public.handle_user_email_change()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  update public.profiles set email = new.email where id = new.id;
-  return new;
-end;
-$$;
+alter table public.customized_training_consultations enable row level security;
 
-revoke execute on function public.handle_user_email_change() from anon, authenticated, public;
+drop policy if exists "Anyone may request a customized training consultation" on public.customized_training_consultations;
+create policy "Anyone may request a customized training consultation"
+  on public.customized_training_consultations for insert
+  to anon, authenticated
+  with check (true);
 
-drop trigger if exists on_auth_user_email_changed on auth.users;
-create trigger on_auth_user_email_changed
-  after update of email on auth.users
-  for each row execute function public.handle_user_email_change();
+create index if not exists customized_training_consultations_created_at_idx
+  on public.customized_training_consultations (created_at desc);
 
--- Backfill emails for users that signed up before this column existed.
-update public.profiles p
-set email = u.email
-from auth.users u
-where u.id = p.id
-  and p.email is distinct from u.email;
+-- 12. Webinar registrations -----------------------------------------------------
 
--- 11. Review status on the two submission tables ------------------------------
+-- Flat $99/webinar, same shape as training_registrations.
+create table if not exists public.webinar_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  webinar_slugs               text[] not null check (array_length(webinar_slugs, 1) between 1 and 20),
+  webinar_names               text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
-alter table public.nominations
-  add column if not exists review_status text not null default 'new'
-  check (review_status in ('new', 'reviewed', 'shortlisted', 'archived'));
+alter table public.webinar_registrations enable row level security;
 
-alter table public.advisory_applications
-  add column if not exists review_status text not null default 'new'
-  check (review_status in ('new', 'reviewed', 'approved', 'archived'));
+drop policy if exists "Anyone may submit a webinar registration" on public.webinar_registrations;
+create policy "Anyone may submit a webinar registration"
+  on public.webinar_registrations for insert
+  to anon, authenticated
+  with check (true);
 
--- 12. Admin policies ---------------------------------------------------------
+create index if not exists webinar_registrations_created_at_idx
+  on public.webinar_registrations (created_at desc);
 
--- Permissive policies OR together, so these sit alongside the owner-only and
--- insert-only policies above rather than replacing them.
+-- 13. Event registrations -------------------------------------------------------
 
-drop policy if exists "Admins may view every profile" on public.profiles;
-create policy "Admins may view every profile"
-  on public.profiles for select
-  to authenticated
-  using (public.is_admin());
+-- Flat $149/event, same shape as webinar_registrations.
+create table if not exists public.event_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  event_slugs                 text[] not null check (array_length(event_slugs, 1) between 1 and 20),
+  event_names                 text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
-drop policy if exists "Admins may update every profile" on public.profiles;
-create policy "Admins may update every profile"
-  on public.profiles for update
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+alter table public.event_registrations enable row level security;
 
--- No delete policy on profiles: removing a member goes through the Supabase
--- Auth admin API (auth.users), and the FK cascade drops the profile row.
+drop policy if exists "Anyone may submit an event registration" on public.event_registrations;
+create policy "Anyone may submit an event registration"
+  on public.event_registrations for insert
+  to anon, authenticated
+  with check (true);
 
-drop policy if exists "Admins may view nominations" on public.nominations;
-create policy "Admins may view nominations"
-  on public.nominations for select
-  to authenticated
-  using (public.is_admin());
+create index if not exists event_registrations_created_at_idx
+  on public.event_registrations (created_at desc);
 
-drop policy if exists "Admins may update nominations" on public.nominations;
-create policy "Admins may update nominations"
-  on public.nominations for update
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+-- 14. Conference registrations ---------------------------------------------------
 
-drop policy if exists "Admins may delete nominations" on public.nominations;
-create policy "Admins may delete nominations"
-  on public.nominations for delete
-  to authenticated
-  using (public.is_admin());
+-- Standard ($1,199) or VIP ($1,399), chosen per conference — conference_tiers and
+-- price_cents are parallel arrays to conference_slugs, like certification_registrations.
+create table if not exists public.conference_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  conference_slugs            text[] not null check (array_length(conference_slugs, 1) between 1 and 20),
+  conference_names            text[] not null,
+  conference_tiers            text[] not null,
+  price_cents                 integer[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
-drop policy if exists "Admins may view advisory applications" on public.advisory_applications;
-create policy "Admins may view advisory applications"
-  on public.advisory_applications for select
-  to authenticated
-  using (public.is_admin());
+alter table public.conference_registrations enable row level security;
 
-drop policy if exists "Admins may update advisory applications" on public.advisory_applications;
-create policy "Admins may update advisory applications"
-  on public.advisory_applications for update
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+drop policy if exists "Anyone may submit a conference registration" on public.conference_registrations;
+create policy "Anyone may submit a conference registration"
+  on public.conference_registrations for insert
+  to anon, authenticated
+  with check (true);
 
-drop policy if exists "Admins may delete advisory applications" on public.advisory_applications;
-create policy "Admins may delete advisory applications"
-  on public.advisory_applications for delete
-  to authenticated
-  using (public.is_admin());
+create index if not exists conference_registrations_created_at_idx
+  on public.conference_registrations (created_at desc);
 
-drop policy if exists "Admins may view program registrations" on public.program_registrations;
-create policy "Admins may view program registrations"
-  on public.program_registrations for select
-  to authenticated
-  using (public.is_admin());
+-- 15. Conference inquiries (nonprofit / government) ------------------------------
 
-drop policy if exists "Admins may update program registrations" on public.program_registrations;
-create policy "Admins may update program registrations"
-  on public.program_registrations for update
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+-- No payment — nonprofit and government registrants contact us instead of
+-- checking out. Write-only, same as the other public contact forms.
+create table if not exists public.conference_inquiries (
+  id                 uuid primary key default gen_random_uuid(),
+  conference_slugs   text[] not null check (array_length(conference_slugs, 1) between 1 and 20),
+  organization_name  text not null check (char_length(organization_name) between 1 and 160),
+  organization_type  text not null check (organization_type in ('nonprofit', 'government')),
+  full_name          text not null check (char_length(full_name) between 2 and 120),
+  email              text not null check (char_length(email) <= 254),
+  phone              text check (char_length(phone) <= 40),
+  message            text check (char_length(message) <= 4000),
+  submitted_by       uuid references auth.users (id) on delete set null,
+  created_at         timestamptz not null default now()
+);
 
-drop policy if exists "Admins may delete program registrations" on public.program_registrations;
-create policy "Admins may delete program registrations"
-  on public.program_registrations for delete
-  to authenticated
-  using (public.is_admin());
+alter table public.conference_inquiries enable row level security;
 
--- Admins can read (and clean up) the private advisory bio/headshot files, so
--- the dashboard can hand out short-lived signed download links.
-drop policy if exists "Admins may view certification registrations" on public.certification_registrations;
-create policy "Admins may view certification registrations"
-  on public.certification_registrations for select
-  to authenticated
-  using (public.is_admin());
+drop policy if exists "Anyone may submit a conference inquiry" on public.conference_inquiries;
+create policy "Anyone may submit a conference inquiry"
+  on public.conference_inquiries for insert
+  to anon, authenticated
+  with check (true);
 
-drop policy if exists "Admins may update certification registrations" on public.certification_registrations;
-create policy "Admins may update certification registrations"
-  on public.certification_registrations for update
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+create index if not exists conference_inquiries_created_at_idx
+  on public.conference_inquiries (created_at desc);
 
-drop policy if exists "Admins may delete certification registrations" on public.certification_registrations;
-create policy "Admins may delete certification registrations"
-  on public.certification_registrations for delete
-  to authenticated
-  using (public.is_admin());
+-- 16. AI Week registrations ------------------------------------------------------
 
-drop policy if exists "Admins may read advisory application files" on storage.objects;
-create policy "Admins may read advisory application files"
-  on storage.objects for select
-  to authenticated
-  using (bucket_id = 'advisory-applications' and public.is_admin());
+-- Flat $599/week, same shape as webinar_registrations.
+create table if not exists public.week_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  week_slugs                  text[] not null check (array_length(week_slugs, 1) between 1 and 20),
+  week_names                  text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
-drop policy if exists "Admins may delete advisory application files" on storage.objects;
-create policy "Admins may delete advisory application files"
-  on storage.objects for delete
-  to authenticated
-  using (bucket_id = 'advisory-applications' and public.is_admin());
+alter table public.week_registrations enable row level security;
 
--- 13. Promote your first admin -----------------------------------------------
+drop policy if exists "Anyone may submit a week registration" on public.week_registrations;
+create policy "Anyone may submit a week registration"
+  on public.week_registrations for insert
+  to anon, authenticated
+  with check (true);
 
--- Nobody is an admin until you say so. Sign up through the site first, then
--- uncomment this line with your own address and run it once. After that you
--- can promote and demote everyone else from /admin/members.
---
--- update public.profiles set role = 'admin' where email = 'you@example.com';
+create index if not exists week_registrations_created_at_idx
+  on public.week_registrations (created_at desc);
 
--- 14. Column-level write hardening --------------------------------------------
+-- 17. Celebration registrations ---------------------------------------------------
 
--- RLS alone does NOT secure the role column. The owner-update policy in
--- section 2 lets a member update their own row, and an RLS policy cannot
--- express *which columns* changed -- `with check` only sees the resulting
--- row. So with a table-wide UPDATE grant, any signed-in member could
---
---   PATCH /rest/v1/profiles?id=eq.<their own id>   {"role": "admin"}
---
--- and promote themselves. Column-level grants are checked before RLS is
--- consulted, which is what actually closes this off. Members may write only
--- their display name and their chosen plan; nothing can write `role` over
--- the REST API at all.
-revoke update on public.profiles from anon, authenticated;
-grant update (full_name, membership_tier) on public.profiles to authenticated;
+-- Flat $2,499/celebration, same shape as week_registrations.
+create table if not exists public.celebration_registrations (
+  id                          uuid primary key default gen_random_uuid(),
+  celebration_slugs           text[] not null check (array_length(celebration_slugs, 1) between 1 and 20),
+  celebration_names           text[] not null,
+  full_name                   text not null check (char_length(full_name) between 2 and 120),
+  email                       text not null check (char_length(email) <= 254),
+  phone                       text check (char_length(phone) <= 40),
+  billing_street              text not null check (char_length(billing_street) <= 200),
+  billing_city                text not null check (char_length(billing_city) <= 120),
+  billing_state               text not null check (char_length(billing_state) <= 80),
+  billing_zip                 text not null check (char_length(billing_zip) <= 20),
+  billing_country             text not null default 'US' check (char_length(billing_country) = 2),
+  amount_cents                integer not null,
+  status                      text not null default 'pending'
+                              check (status in ('pending', 'paid', 'cancelled')),
+  stripe_checkout_session_id  text unique,
+  stripe_payment_intent_id    text,
+  submitted_by                uuid references auth.users (id) on delete set null,
+  created_at                  timestamptz not null default now()
+);
 
--- 15. Guarded role changes ----------------------------------------------------
+alter table public.celebration_registrations enable row level security;
 
--- Because of the grant above, even an admin cannot write `role` directly.
--- Role changes go through this function instead: it runs as its definer (so
--- the grant does not apply), but refuses to do anything unless the *caller*
--- is an admin. Same shape as admin_metrics()/admin_members().
-create or replace function public.admin_set_member_role(target uuid, new_role text)
-returns void
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if not public.is_admin() then
-    raise exception 'Not authorized' using errcode = '42501';
-  end if;
+drop policy if exists "Anyone may submit a celebration registration" on public.celebration_registrations;
+create policy "Anyone may submit a celebration registration"
+  on public.celebration_registrations for insert
+  to anon, authenticated
+  with check (true);
 
-  if new_role not in ('member', 'admin') then
-    raise exception 'Invalid role' using errcode = '22023';
-  end if;
-
-  -- Enforced here as well as in the app, so the last admin cannot lock
-  -- everyone out even by calling the RPC directly.
-  if target = (select auth.uid()) and new_role <> 'admin' then
-    raise exception 'You cannot remove your own admin access'
-      using errcode = '42501';
-  end if;
-
-  update public.profiles set role = new_role where id = target;
-end;
-$$;
-
-revoke execute on function public.admin_set_member_role(uuid, text) from anon, public;
-grant execute on function public.admin_set_member_role(uuid, text) to authenticated;
+create index if not exists celebration_registrations_created_at_idx
+  on public.celebration_registrations (created_at desc);

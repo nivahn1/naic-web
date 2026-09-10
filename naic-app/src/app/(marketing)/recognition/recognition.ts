@@ -21,6 +21,8 @@ export type HonorList = {
   slug: string;
   name: string;
   emblem: SealMark;
+  /** Real badge lockup, if one has been supplied — used in place of the emblem. */
+  logo?: { src: string; width: number; height: number };
   body: string;
   criteria: string[];
 };
@@ -29,6 +31,11 @@ export const LISTS: HonorList[] = [
   {
     slug: "top-50-chief-ai-officers",
     name: "Top 50 Chief AI Officers",
+    logo: {
+      src: "/brand/recognition/top-50-chief-ai-officers.png",
+      width: 2560,
+      height: 1978,
+    },
     emblem: {
       top: "TOP 50",
       bottom: "CHIEF AI OFFICERS",
@@ -53,6 +60,11 @@ export const LISTS: HonorList[] = [
   {
     slug: "top-100-leaders-in-ai",
     name: "Top 100 Leaders in AI™",
+    logo: {
+      src: "/brand/recognition/top-100-leaders-in-ai.png",
+      width: 2154,
+      height: 521,
+    },
     emblem: {
       top: "TOP 100",
       bottom: "LEADERS IN AI",
@@ -77,6 +89,11 @@ export const LISTS: HonorList[] = [
   {
     slug: "ai-emerging-100",
     name: "AI Emerging 100™",
+    logo: {
+      src: "/brand/recognition/ai-emerging-100.png",
+      width: 2313,
+      height: 660,
+    },
     emblem: {
       top: "AI EMERGING",
       bottom: "100",

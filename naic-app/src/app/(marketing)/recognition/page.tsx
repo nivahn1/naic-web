@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   PageHeader,
   Section,
@@ -57,13 +58,25 @@ export default function RecognitionPage() {
       {LISTS.map((list, i) => (
         <Section key={list.slug} tint={i % 2 === 0}>
           <div id={list.slug} className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-12">
-            <Seal
-              id={list.slug}
-              label={list.name}
-              mark={list.emblem}
-              tone="dark"
-              className="h-40 w-40 shrink-0 self-center sm:h-44 sm:w-44 sm:self-start"
-            />
+            {list.logo ? (
+              <div className="flex h-40 w-40 shrink-0 items-center justify-center self-center rounded-2xl bg-white p-5 shadow-sm sm:h-44 sm:w-44 sm:self-start">
+                <Image
+                  src={list.logo.src}
+                  alt={list.name}
+                  width={list.logo.width}
+                  height={list.logo.height}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ) : (
+              <Seal
+                id={list.slug}
+                label={list.name}
+                mark={list.emblem}
+                tone="dark"
+                className="h-40 w-40 shrink-0 self-center sm:h-44 sm:w-44 sm:self-start"
+              />
+            )}
             <div>
               <SectionTitle>{list.name}</SectionTitle>
               <Lead>{list.body}</Lead>
