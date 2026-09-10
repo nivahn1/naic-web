@@ -10,7 +10,12 @@ create table if not exists public.profiles (
                  check (membership_tier in
                    ('free','bronze','silver','gold','platinum','diamond')),
   created_at     timestamptz not null default now(),
-  updated_at     timestamptz not null default now()
+  updated_at     timestamptz not null default now(),
+  -- Added directly against the live project (not yet exercised by app code
+  -- in this branch) — tracked here so schema.sql matches reality.
+  role           text not null default 'member'
+                 check (role in ('member', 'admin')),
+  email          text
 );
 
 -- 2. Row Level Security -------------------------------------------------------
@@ -101,7 +106,11 @@ create table if not exists public.nominations (
   awards             text[] not null check (array_length(awards, 1) between 1 and 6),
   rationale          text not null check (char_length(rationale) between 40 and 4000),
   submitted_by       uuid references auth.users (id) on delete set null,
-  created_at         timestamptz not null default now()
+  created_at         timestamptz not null default now(),
+  -- Added directly against the live project for the review workflow —
+  -- tracked here so schema.sql matches reality.
+  review_status      text not null default 'new'
+                     check (review_status in ('new', 'reviewed', 'shortlisted', 'archived'))
 );
 
 alter table public.nominations enable row level security;
@@ -132,7 +141,11 @@ create table if not exists public.advisory_applications (
   bio_path      text not null,
   headshot_path text not null,
   submitted_by  uuid references auth.users (id) on delete set null,
-  created_at    timestamptz not null default now()
+  created_at    timestamptz not null default now(),
+  -- Added directly against the live project for the review workflow —
+  -- tracked here so schema.sql matches reality.
+  review_status text not null default 'new'
+                check (review_status in ('new', 'reviewed', 'approved', 'archived'))
 );
 
 alter table public.advisory_applications enable row level security;
