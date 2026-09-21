@@ -90,27 +90,19 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
           <nav className="hidden items-center gap-1 lg:flex">
             {NAV.map((item) =>
               item.children ? (
-                <div key={item.href}>
-                  <button
-                    type="button"
-                    aria-expanded={mobileSubOpen === item.href}
-                    onClick={() =>
-                      setMobileSubOpen((cur) =>
-                        cur === item.href ? null : item.href,
-                      )
-                    }
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 hover:bg-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+                <div key={item.href} className="group relative">
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     {item.label}
                     <svg
-                      width="11"
-                      height="11"
+                      width="10"
+                      height="10"
                       viewBox="0 0 10 10"
                       fill="none"
                       aria-hidden
-                      className={`transition-transform ${
-                        mobileSubOpen === item.href ? "rotate-180" : ""
-                      }`}
+                      className="mt-0.5 transition-transform group-hover:rotate-180"
                     >
                       <path
                         d="M2 3.5 5 6.5 8 3.5"
@@ -120,9 +112,9 @@ export function SiteHeader({ authed = false }: { authed?: boolean }) {
                         strokeLinejoin="round"
                       />
                     </svg>
-                  </button>
-                  {mobileSubOpen === item.href ? (
-                    <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
+                  </Link>
+                  <div className="invisible absolute left-0 top-full z-10 pt-2 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="min-w-[220px] rounded-xl border border-white/15 bg-[#00004d]/95 p-1.5 shadow-xl backdrop-blur-xl">
                       {item.children.map((child) => (
                         <Link
                           key={child.href}
