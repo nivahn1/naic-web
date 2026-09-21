@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import * as z from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { STATES } from "@/lib/chapters";
 
 const NOT_CONFIGURED: AuthState = {
   error:
@@ -15,14 +16,19 @@ const NOT_CONFIGURED: AuthState = {
 export type AuthState = {
   error?: string;
   fieldErrors?: Partial<
-    Record<"name" | "email" | "password" | "confirm", string[]>
+    Record<"name" | "email" | "state" | "password" | "confirm", string[]>
   >;
   message?: string;
 };
 
+// The chapter roster is the source of truth for which states we recognise, so
+// a member's home state always maps onto a real chapter.
+const STATE_ABBRS = STATES.map((s) => s.abbr);
+
 const SignupSchema = z.object({
   name: z.string().min(2, { error: "Name must be at least 2 characters." }).trim(),
   email: z.email({ error: "Enter a valid email address." }).trim(),
+  state: z.enum(STATE_ABBRS, { error: "Select your state." }),
   password: z
     .string()
     .min(8, { error: "Password must be at least 8 characters." }),
@@ -64,6 +70,7 @@ export async function signup(
   const parsed = SignupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
+    state: formData.get("state"),
     password: formData.get("password"),
   });
 
@@ -71,7 +78,7 @@ export async function signup(
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, state, password } = parsed.data;
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? "";
 
@@ -79,7 +86,7 @@ export async function signup(
     email,
     password,
     options: {
-      data: { full_name: name },
+      data: { full_name: name, state },
       emailRedirectTo: `${origin}/auth/confirm`,
     },
   });

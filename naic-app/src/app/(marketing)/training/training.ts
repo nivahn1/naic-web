@@ -169,3 +169,9 @@ export const TRAININGS: Training[] = [
 export function getTraining(slug: string) {
   return TRAININGS.find((t) => t.slug === slug);
 }
+
+/** Customized AI Training is scoped through a consultation, not a flat-rate
+ *  checkout, so it's excluded from the $999 registration flow. */
+export const REGISTERABLE_TRAININGS = TRAININGS.filter(
+  (t) => t.slug !== "customized",
+);

@@ -1,13 +1,21 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/profile";
-import { getTier } from "@/lib/tiers";
+import { getTier, meetsTier, type TierId } from "@/lib/tiers";
 
-const RESOURCES = [
+const RESOURCES: {
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+  /** Minimum tier required to access this resource. Omit for free access. */
+  minTier?: TierId;
+}[] = [
   {
     title: "2026 AI Webinar Series",
     body: "Six live sessions — AI Trends & Forecast, Responsible AI, Women Leading the Future of AI, and more.",
     href: "/#calendar",
     cta: "View schedule",
+    minTier: "bronze",
   },
   {
     title: "Corporate Member Toolkit",
@@ -20,6 +28,7 @@ const RESOURCES = [
     body: "Networking groups and virtual meetups with practitioners, researchers, and leaders across every industry.",
     href: "/#events",
     cta: "Go to forum",
+    minTier: "bronze",
   },
   {
     title: "Recognition & Awards",
@@ -112,24 +121,54 @@ export default async function PortalDashboard() {
         Member resources
       </h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {RESOURCES.map((r) => (
-          <Link
-            key={r.title}
-            href={r.href}
-            className="group rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-5 transition-all hover:-translate-y-0.5 hover:border-violet-400/50"
-          >
-            <h3 className="font-display font-semibold text-white dark:text-white">
-              {r.title}
-            </h3>
-            <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">{r.body}</p>
-            <span className="mt-3 inline-block text-sm font-semibold text-violet-300">
-              {r.cta}{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-0.5">
-                →
+        {RESOURCES.map((r) => {
+          const unlocked = meetsTier(tier.id, r.minTier ?? "free");
+
+          if (!unlocked) {
+            const requiredTier = getTier(r.minTier);
+            return (
+              <div
+                key={r.title}
+                className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-5 opacity-60"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display font-semibold text-white dark:text-white">
+                    {r.title}
+                  </h3>
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    {requiredTier.name}+
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">{r.body}</p>
+                <Link
+                  href="/portal/membership"
+                  className="mt-3 inline-block text-sm font-semibold text-violet-300 hover:underline"
+                >
+                  Upgrade to unlock →
+                </Link>
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={r.title}
+              href={r.href}
+              className="group rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-5 transition-all hover:-translate-y-0.5 hover:border-violet-400/50"
+            >
+              <h3 className="font-display font-semibold text-white dark:text-white">
+                {r.title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">{r.body}</p>
+              <span className="mt-3 inline-block text-sm font-semibold text-violet-300">
+                {r.cta}{" "}
+                <span className="inline-block transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
               </span>
-            </span>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
