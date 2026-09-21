@@ -512,3 +512,51 @@ $$;
 
 revoke execute on function public.admin_set_member_role(uuid, text) from anon, public;
 grant execute on function public.admin_set_member_role(uuid, text) to authenticated;
+
+-- 16. Member home state -------------------------------------------------------
+
+-- Every new member picks their state on the join form, so we know which
+-- chapter they belong to. Two-letter USPS abbreviation, matching the roster
+-- in src/lib/chapters.ts. Nullable because members who signed up before this
+-- column existed have no answer on file.
+alter table public.profiles
+  add column if not exists state text
+  check (state is null or state ~ '^[A-Z]{2}$');
+
+-- Carry the state chosen at sign-up from the auth metadata onto the profile,
+-- alongside the name and email the earlier versions of this trigger handled.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, full_name, email, state)
+  values (
+    new.id,
+    new.raw_user_meta_data ->> 'full_name',
+    new.email,
+    nullif(upper(new.raw_user_meta_data ->> 'state'), '')
+  )
+  on conflict (id) do update
+    set email = excluded.email,
+        state = coalesce(profiles.state, excluded.state);
+  return new;
+end;
+$$;
+
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
+
+-- Members may correct their own state when they move; `role` stays unwritable
+-- over REST (see section 14).
+grant update (full_name, membership_tier, state) on public.profiles to authenticated;
+
+-- Backfill states for users who chose one at sign-up before this column
+-- existed (their answer is still in the auth metadata).
+update public.profiles p
+set state = nullif(upper(u.raw_user_meta_data ->> 'state'), '')
+from auth.users u
+where u.id = p.id
+  and p.state is null
+  and u.raw_user_meta_data ->> 'state' is not null;

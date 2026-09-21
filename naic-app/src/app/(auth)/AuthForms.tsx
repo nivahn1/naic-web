@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { REGIONS, STATES } from "@/lib/chapters";
 import {
   login,
   requestPasswordReset,
@@ -180,6 +181,37 @@ export function SignupForm({ redirectTo }: { redirectTo: string }) {
             placeholder="you@example.com"
           />
           <FieldError errors={state.fieldErrors?.email} />
+        </div>
+
+        <div>
+          <label htmlFor="state" className="mb-1.5 block text-sm font-medium text-slate-200">
+            State
+          </label>
+          <select
+            id="state"
+            name="state"
+            autoComplete="address-level1"
+            required
+            defaultValue=""
+            className={inputClass}
+          >
+            <option value="" disabled>
+              Select your state
+            </option>
+            {REGIONS.map((region) => (
+              <optgroup key={region} label={region}>
+                {STATES.filter((s) => s.region === region).map((s) => (
+                  <option key={s.abbr} value={s.abbr}>
+                    {s.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-slate-400">
+            This connects you to your state chapter.
+          </p>
+          <FieldError errors={state.fieldErrors?.state} />
         </div>
 
         <div>
